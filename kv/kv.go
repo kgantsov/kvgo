@@ -26,12 +26,41 @@ func NewKV(dbPath, indexPath string) *KV {
 	kv.DbPath = dbPath
 	kv.indexPath = indexPath
 
-	err := kv.LoadIndexes()
+	err := kv.loadIndexes()
 	if err != nil {
 		fmt.Println("??????????", err)
 	}
 	kv.MemTable = make(map[string]string)
 	return kv
+}
+
+func (kv *KV) saveIndexes() error {
+	file, err := os.OpenFile(kv.indexPath, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	if err == nil {
+		encoder := gob.NewEncoder(file)
+		encoder.Encode(kv.Indexes)
+	}
+	file.Close()
+	return err
+}
+
+func (kv *KV) loadIndexes() error {
+	file, err := os.Open(kv.indexPath)
+	if err == nil {
+		decoder := gob.NewDecoder(file)
+		err = decoder.Decode(&kv.Indexes)
+	} else {
+
+	}
+	file.Close()
+	return err
+}
+
+func (kv *KV) Close() {
+	kv.Flush()
 }
 
 func (kv *KV) Set(key, value string) {
@@ -139,36 +168,7 @@ func (kv *KV) Flush() {
 
 	kv.Indexes = append(kv.Indexes, index)
 	fmt.Printf("@@@ Indexes: %v Offset: %d\n", kv.Indexes, kv.Offset)
-	kv.SaveIndexes()
+	kv.saveIndexes()
 
 	f.Close()
-}
-
-func (kv *KV) SaveIndexes() error {
-	file, err := os.OpenFile(kv.indexPath, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	if err == nil {
-		encoder := gob.NewEncoder(file)
-		encoder.Encode(kv.Indexes)
-	}
-	file.Close()
-	return err
-}
-
-func (kv *KV) LoadIndexes() error {
-	file, err := os.Open(kv.indexPath)
-	if err == nil {
-		decoder := gob.NewDecoder(file)
-		err = decoder.Decode(&kv.Indexes)
-	} else {
-
-	}
-	file.Close()
-	return err
-}
-
-func (kv *KV) Close() {
-	kv.Flush()
 }
