@@ -19,12 +19,14 @@ type KV struct {
 	MemTable  map[string]string
 	DbPath    string
 	indexPath string
+	blockSize uint16
 }
 
-func NewKV(dbPath, indexPath string) *KV {
+func NewKV(dbPath, indexPath string, blockSize uint16) *KV {
 	kv := new(KV)
 	kv.DbPath = dbPath
 	kv.indexPath = indexPath
+	kv.blockSize = blockSize
 
 	err := kv.loadIndexes()
 	if err != nil {
@@ -65,6 +67,10 @@ func (kv *KV) Close() {
 
 func (kv *KV) Set(key, value string) {
 	kv.MemTable[key] = value
+
+	if uint16(len(kv.MemTable)) == kv.blockSize {
+		kv.Flush()
+	}
 }
 
 func (kv *KV) Get(key string) (string, bool) {
@@ -169,6 +175,7 @@ func (kv *KV) Flush() {
 	kv.Indexes = append(kv.Indexes, index)
 	fmt.Printf("@@@ Indexes: %v Offset: %d\n", kv.Indexes, kv.Offset)
 	kv.saveIndexes()
+	kv.MemTable = make(map[string]string)
 
 	f.Close()
 }
