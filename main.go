@@ -30,8 +30,8 @@ func main() {
 
 	fmt.Println("---", kv.Indexes)
 	fmt.Println("!!!", kv.MemTable)
-	kv.MemTable = make(map[string]string)
-	fmt.Println("!!!", kv.MemTable)
+	// kv.MemTable = make(map[string]string)
+	// fmt.Println("!!!", kv.MemTable)
 
 	val, ok := kv.Get("last_name")
 	fmt.Printf("%v :::: %s\n", ok, val)

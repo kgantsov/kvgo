@@ -19,10 +19,10 @@ type KV struct {
 	MemTable  map[string]string
 	DbPath    string
 	indexPath string
-	blockSize uint16
+	blockSize uint32
 }
 
-func NewKV(dbPath, indexPath string, blockSize uint16) *KV {
+func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
 	kv := new(KV)
 	kv.DbPath = dbPath
 	kv.indexPath = indexPath
@@ -68,7 +68,7 @@ func (kv *KV) Close() {
 func (kv *KV) Set(key, value string) {
 	kv.MemTable[key] = value
 
-	if uint16(len(kv.MemTable)) == kv.blockSize {
+	if uint32(len(kv.MemTable)) == kv.blockSize {
 		kv.Flush()
 	}
 }
