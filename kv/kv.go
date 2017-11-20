@@ -77,6 +77,9 @@ func (kv *KV) Get(key string) (string, bool) {
 	val, ok := kv.MemTable[key]
 	if ok {
 		fmt.Printf("Key: %s found in memory\n", key)
+		if val == "__KVGO_TOMBSTONE__" {
+			return "", false
+		}
 		return val, ok
 	}
 
@@ -86,6 +89,8 @@ func (kv *KV) Get(key string) (string, bool) {
 	}
 
 	defer f.Close()
+
+	value := ""
 
 	for i := len(kv.Indexes) - 1; i >= 0; i-- {
 		indexVal, ok := kv.Indexes[i][key]
@@ -113,15 +118,23 @@ func (kv *KV) Get(key string) (string, bool) {
 			fmt.Println("Error: ", err)
 		}
 
-		fmt.Printf("Key: %s found on disc. Value: '%s'\n", key, string(data[keyLength:]))
+		value = string(data[keyLength:])
+		fmt.Printf("Key: %s found on disc. Value: '%s'\n", key, value)
+		if value == "__KVGO_TOMBSTONE__" {
+			return "", false
+		}
 
-		return string(data[keyLength:]), true
+		return value, true
 	}
 	return "", false
 }
 
 func (kv *KV) Delete(key string) {
-	delete(kv.MemTable, key)
+	kv.MemTable[key] = "__KVGO_TOMBSTONE__"
+
+	if uint32(len(kv.MemTable)) == kv.blockSize {
+		kv.Flush()
+	}
 }
 
 func (kv *KV) Flush() {

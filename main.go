@@ -24,9 +24,9 @@ func main() {
 	// kv.Set("email", "litvinenko@gmail.com")
 	// kv.Set("status", "ACTIVE")
 
-	// kv.Set("first_name", "Poll")
 	// kv.Set("last_name", "Andersson")
 	// kv.Flush()
+	// kv.Delete("first_name")
 
 	fmt.Println("---", kv.Indexes)
 	fmt.Println("!!!", kv.MemTable)
