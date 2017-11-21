@@ -9,6 +9,8 @@ import (
 	"os"
 )
 
+const MAX_BLOCKS_NUMBER = 4
+
 type Index struct {
 	Offset int64
 }
@@ -37,6 +39,8 @@ func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
 }
 
 func (kv *KV) saveIndexes() error {
+	kv.compactIndexes()
+
 	file, err := os.OpenFile(kv.indexPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -59,6 +63,20 @@ func (kv *KV) loadIndexes() error {
 	}
 	file.Close()
 	return err
+}
+
+func (kv *KV) compactIndexes() {
+	newIndex := make(map[string]Index)
+
+	if len(kv.Indexes) > MAX_BLOCKS_NUMBER {
+		for _, index := range kv.Indexes {
+			for k, v := range index {
+				newIndex[k] = v
+			}
+		}
+
+		kv.Indexes = []map[string]Index{newIndex}
+	}
 }
 
 func (kv *KV) Close() {

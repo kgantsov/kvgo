@@ -28,7 +28,9 @@ func main() {
 	// kv.Flush()
 	// kv.Delete("first_name")
 
-	fmt.Println("---", kv.Indexes)
+	// kv.Set("OPL", "KKKKo")
+
+	fmt.Println("---", len(kv.Indexes), kv.Indexes)
 	fmt.Println("!!!", kv.MemTable)
 	// kv.MemTable = make(map[string]string)
 	// fmt.Println("!!!", kv.MemTable)
