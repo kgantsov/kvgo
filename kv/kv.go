@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
-const MAX_BLOCKS_NUMBER = 4
+const MAX_BLOCKS_NUMBER = 8
 
 type Index struct {
 	Offset int64
@@ -39,6 +40,7 @@ func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
 }
 
 func (kv *KV) saveIndexes() error {
+	defer TimeTrack(time.Now(), "saveIndexes")
 	kv.compactIndexes()
 
 	file, err := os.OpenFile(kv.indexPath, os.O_CREATE|os.O_WRONLY, 0644)
@@ -54,6 +56,8 @@ func (kv *KV) saveIndexes() error {
 }
 
 func (kv *KV) loadIndexes() error {
+	defer TimeTrack(time.Now(), "loadIndexes")
+
 	file, err := os.Open(kv.indexPath)
 	if err == nil {
 		decoder := gob.NewDecoder(file)
@@ -84,6 +88,7 @@ func (kv *KV) Close() {
 }
 
 func (kv *KV) Set(key, value string) {
+	defer TimeTrack(time.Now(), "Set")
 	kv.MemTable[key] = value
 
 	if uint32(len(kv.MemTable)) == kv.blockSize {
@@ -92,9 +97,11 @@ func (kv *KV) Set(key, value string) {
 }
 
 func (kv *KV) Get(key string) (string, bool) {
+	defer TimeTrack(time.Now(), "Get")
+
 	val, ok := kv.MemTable[key]
 	if ok {
-		fmt.Printf("Key: %s found in memory\n", key)
+		// fmt.Printf("Key: %s found in memory\n", key)
 		if val == "__KVGO_TOMBSTONE__" {
 			return "", false
 		}
@@ -137,7 +144,7 @@ func (kv *KV) Get(key string) (string, bool) {
 		}
 
 		value = string(data[keyLength:])
-		fmt.Printf("Key: %s found on disc. Value: '%s'\n", key, value)
+		// fmt.Printf("Key: %s found on disc. Value: '%s'\n", key, value)
 		if value == "__KVGO_TOMBSTONE__" {
 			return "", false
 		}
@@ -148,6 +155,7 @@ func (kv *KV) Get(key string) (string, bool) {
 }
 
 func (kv *KV) Delete(key string) {
+	defer TimeTrack(time.Now(), "Delete")
 	kv.MemTable[key] = "__KVGO_TOMBSTONE__"
 
 	if uint32(len(kv.MemTable)) == kv.blockSize {
@@ -156,8 +164,6 @@ func (kv *KV) Delete(key string) {
 }
 
 func (kv *KV) Flush() {
-	fmt.Printf("!!! Indexes: %v Offset: %d\n", kv.Indexes, kv.Offset)
-
 	if len(kv.MemTable) == 0 {
 		return
 	}
@@ -204,9 +210,13 @@ func (kv *KV) Flush() {
 	}
 
 	kv.Indexes = append(kv.Indexes, index)
-	fmt.Printf("@@@ Indexes: %v Offset: %d\n", kv.Indexes, kv.Offset)
 	kv.saveIndexes()
 	kv.MemTable = make(map[string]string)
 
 	f.Close()
+}
+
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", name, elapsed)
 }
