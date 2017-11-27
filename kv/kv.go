@@ -16,6 +16,18 @@ type Index struct {
 	Offset int64
 }
 
+type Result struct {
+	Key   string
+	Value string
+	Ok    bool
+}
+
+type Entity struct {
+	Key   string
+	Value string
+	Res   chan Result
+}
+
 type KV struct {
 	Offset    int64
 	Indexes   []map[string]Index
@@ -23,6 +35,10 @@ type KV struct {
 	DbPath    string
 	indexPath string
 	blockSize uint32
+	setCh     chan Entity
+	getCh     chan Entity
+	delCh     chan Entity
+	quitCh    chan bool
 }
 
 func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
@@ -30,42 +46,69 @@ func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
 	kv.DbPath = dbPath
 	kv.indexPath = indexPath
 	kv.blockSize = blockSize
+	kv.MemTable = make(map[string]string)
+	kv.setCh = make(chan Entity, 1000)
+	kv.getCh = make(chan Entity, 1000)
+	kv.delCh = make(chan Entity, 1000)
+	kv.quitCh = make(chan bool)
 
 	err := kv.loadIndexes()
 	if err != nil {
-		fmt.Println("??????????", err)
 	}
-	kv.MemTable = make(map[string]string)
+
+	go worker(kv)
+
 	return kv
 }
 
+func worker(kv *KV) {
+	for {
+		select {
+		case entity := <-kv.setCh:
+			set(kv, entity.Key, entity.Value)
+			entity.Res <- Result{entity.Key, entity.Value, true}
+		case entity := <-kv.getCh:
+			val, ok := get(kv, entity.Key)
+			entity.Res <- Result{entity.Key, val, ok}
+		case entity := <-kv.delCh:
+			delete(kv, entity.Key)
+			entity.Res <- Result{entity.Key, "", true}
+		case <-kv.quitCh:
+			return
+		default:
+		}
+	}
+}
+
 func (kv *KV) saveIndexes() error {
-	defer TimeTrack(time.Now(), "saveIndexes")
+	// defer TimeTrack(time.Now(), "saveIndexes")
+
 	kv.compactIndexes()
 
 	file, err := os.OpenFile(kv.indexPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
+	defer file.Close()
+
 	if err == nil {
 		encoder := gob.NewEncoder(file)
 		encoder.Encode(kv.Indexes)
 	}
-	file.Close()
+
 	return err
 }
 
 func (kv *KV) loadIndexes() error {
-	defer TimeTrack(time.Now(), "loadIndexes")
+	// defer TimeTrack(time.Now(), "loadIndexes")
 
 	file, err := os.Open(kv.indexPath)
 	if err == nil {
 		decoder := gob.NewDecoder(file)
 		err = decoder.Decode(&kv.Indexes)
-	} else {
-
 	}
-	file.Close()
+	defer file.Close()
+
 	return err
 }
 
@@ -84,21 +127,37 @@ func (kv *KV) compactIndexes() {
 }
 
 func (kv *KV) Close() {
+	// defer TimeTrack(time.Now(), "Close")
 	kv.Flush()
+	kv.quitCh <- true
 }
 
 func (kv *KV) Set(key, value string) {
-	defer TimeTrack(time.Now(), "Set")
-	kv.MemTable[key] = value
+	// defer TimeTrack(time.Now(), fmt.Sprintf("Set `%s` with value `%s`", key, value))
 
-	if uint32(len(kv.MemTable)) == kv.blockSize {
-		kv.Flush()
-	}
+	resC := make(chan Result)
+	kv.setCh <- Entity{key, value, resC}
+	<-resC
 }
 
 func (kv *KV) Get(key string) (string, bool) {
-	defer TimeTrack(time.Now(), "Get")
+	// defer TimeTrack(time.Now(), fmt.Sprintf("Get `%s`", key))
 
+	resC := make(chan Result)
+	kv.getCh <- Entity{key, "", resC}
+	res := <-resC
+	return res.Value, res.Ok
+}
+
+func (kv *KV) Delete(key string) {
+	// defer TimeTrack(time.Now(), fmt.Sprintf("Delete `%s`", key))
+
+	resC := make(chan Result)
+	kv.delCh <- Entity{key, "", resC}
+	<-resC
+}
+
+func get(kv *KV, key string) (string, bool) {
 	val, ok := kv.MemTable[key]
 	if ok {
 		// fmt.Printf("Key: %s found in memory\n", key)
@@ -144,7 +203,6 @@ func (kv *KV) Get(key string) (string, bool) {
 		}
 
 		value = string(data[keyLength:])
-		// fmt.Printf("Key: %s found on disc. Value: '%s'\n", key, value)
 		if value == "__KVGO_TOMBSTONE__" {
 			return "", false
 		}
@@ -154,8 +212,15 @@ func (kv *KV) Get(key string) (string, bool) {
 	return "", false
 }
 
-func (kv *KV) Delete(key string) {
-	defer TimeTrack(time.Now(), "Delete")
+func set(kv *KV, key, value string) {
+	kv.MemTable[key] = value
+
+	if uint32(len(kv.MemTable)) == kv.blockSize {
+		kv.Flush()
+	}
+}
+
+func delete(kv *KV, key string) {
 	kv.MemTable[key] = "__KVGO_TOMBSTONE__"
 
 	if uint32(len(kv.MemTable)) == kv.blockSize {
@@ -164,6 +229,8 @@ func (kv *KV) Delete(key string) {
 }
 
 func (kv *KV) Flush() {
+	// defer TimeTrack(time.Now(), "Flush")
+
 	if len(kv.MemTable) == 0 {
 		return
 	}
