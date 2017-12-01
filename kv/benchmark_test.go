@@ -11,8 +11,6 @@ import (
 )
 
 func generateData(dbPath, indexPath string, blockSize, numberOfKeys int) {
-	// defer TimeTrack(time.Now(), "generateData")
-
 	store := NewKV(dbPath, indexPath, 100000)
 
 	for i := 0; i < numberOfKeys; i++ {
@@ -22,7 +20,6 @@ func generateData(dbPath, indexPath string, blockSize, numberOfKeys int) {
 }
 
 func benchmarkGet(blockSize, numberOfKeys int, b *testing.B) {
-	// defer TimeTrack(time.Now(), "benchmarkGet")
 	b.StopTimer()
 
 	tmpDir, _ := ioutil.TempDir("", "benchmarkStore")
@@ -46,7 +43,9 @@ func benchmarkGet(blockSize, numberOfKeys int, b *testing.B) {
 		value, _ := store.Get(key)
 
 		if value != fmt.Sprintf("value_%d", index) {
-			fmt.Printf("Values mismatch `%s` expexted `%s`\n", value, fmt.Sprintf("value_%d", index))
+			fmt.Printf(
+				"Values mismatch `%s` expexted `%s`\n", value, fmt.Sprintf("value_%d", index),
+			)
 		}
 
 		b.SetBytes(int64(len([]byte(key))))
@@ -57,7 +56,6 @@ func benchmarkGet(blockSize, numberOfKeys int, b *testing.B) {
 }
 
 func benchmarkSet(blockSize, numberOfKeys int, b *testing.B) {
-	// defer TimeTrack(time.Now(), "benchmarkGet")
 	b.StopTimer()
 
 	tmpDir, _ := ioutil.TempDir("", "benchmarkStore")
@@ -86,7 +84,6 @@ func benchmarkSet(blockSize, numberOfKeys int, b *testing.B) {
 }
 
 func benchmarkDelete(blockSize, numberOfKeys int, b *testing.B) {
-	// defer TimeTrack(time.Now(), "benchmarkDelete")
 	b.StopTimer()
 
 	tmpDir, _ := ioutil.TempDir("", "benchmarkStore")
@@ -114,7 +111,6 @@ func benchmarkDelete(blockSize, numberOfKeys int, b *testing.B) {
 }
 
 func benchmarkParallelGet(blockSize, numberOfKeys int, b *testing.B) {
-	// defer TimeTrack(time.Now(), "benchmarkGet")
 	b.StopTimer()
 
 	tmpDir, _ := ioutil.TempDir("", "benchmarkStore")
@@ -139,7 +135,9 @@ func benchmarkParallelGet(blockSize, numberOfKeys int, b *testing.B) {
 			value, _ := store.Get(key)
 
 			if value != fmt.Sprintf("value_%d", index) {
-				fmt.Printf("Values mismatch `%s` expexted `%s`\n", value, fmt.Sprintf("value_%d", index))
+				fmt.Printf(
+					"Values mismatch `%s` expexted `%s`\n", value, fmt.Sprintf("value_%d", index),
+				)
 			}
 
 			b.SetBytes(int64(len([]byte(key))))
@@ -151,7 +149,6 @@ func benchmarkParallelGet(blockSize, numberOfKeys int, b *testing.B) {
 }
 
 func benchmarkParallelSet(blockSize, numberOfKeys int, b *testing.B) {
-	// defer TimeTrack(time.Now(), "benchmarkParallelSet")
 	b.StopTimer()
 
 	tmpDir, _ := ioutil.TempDir("", "benchmarkStore")
@@ -184,7 +181,6 @@ func benchmarkParallelSet(blockSize, numberOfKeys int, b *testing.B) {
 }
 
 func benchmarkParallelDelete(blockSize, numberOfKeys int, b *testing.B) {
-	// defer TimeTrack(time.Now(), "benchmarkDelete")
 	b.StopTimer()
 
 	tmpDir, _ := ioutil.TempDir("", "benchmarkStore")
