@@ -94,7 +94,6 @@ func TestBasicParallel(t *testing.T) {
 					value,
 				)
 			}
-			// assetEqual(t, key, expextedValue, value)
 		}
 	})
 	t.Run("SET2", func(t *testing.T) {
@@ -117,7 +116,6 @@ func TestBasicParallel(t *testing.T) {
 					value,
 				)
 			}
-			// assetEqual(t, key, expextedValue, value)
 		}
 	})
 	t.Run("SET3", func(t *testing.T) {
@@ -140,17 +138,6 @@ func TestBasicParallel(t *testing.T) {
 					value,
 				)
 			}
-			// assetEqual(t, key, expextedValue, value)
 		}
 	})
-
-	// t.Run("GET", func(t *testing.T) {
-	// 	t.Parallel()
-	// 	for i := 0; i < N; i++ {
-	// 		expextedValue := fmt.Sprintf("value_%d", i)
-	// 		value, _ := store.Get(fmt.Sprintf("key_%d", i))
-	// 		assetEqual(t, fmt.Sprintf("key_%d", i), expextedValue, value)
-	// 	}
-	// 	store.Flush()
-	// })
 }
