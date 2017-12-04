@@ -2,6 +2,30 @@
 A simple embedded key-value store
 
 
+## Usage
+
+#### Create storage
+
+    store := NewKV(dbPath, indexPath, 1000)
+    defer store.Close()
+
+
+#### Get value
+
+    value, ok := store.Get("USER_NAME_12312")
+
+
+#### Set value
+
+    store.Set("USER_NAME_12312", "John")
+
+
+#### Delete value
+
+    store.Delete("USER_NAME_12312")
+
+
+
 ## Benchmarks
 
     goos: darwin
