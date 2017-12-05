@@ -7,7 +7,6 @@ A simple embedded key-value store
 #### Create storage
 
     store := NewKV(dbPath, indexPath, 1000)
-    defer store.Close()
 
 
 #### Get value
@@ -23,6 +22,10 @@ A simple embedded key-value store
 #### Delete value
 
     store.Delete("USER_NAME_12312")
+
+#### Close DB
+
+    store.Close()
 
 
 
