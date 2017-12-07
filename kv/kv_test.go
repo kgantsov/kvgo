@@ -23,7 +23,7 @@ func TestBasic(t *testing.T) {
 	dbPath := filepath.Join(".", "data.db")
 	indexPath := filepath.Join(".", "indexes.idx")
 
-	store := NewKV(dbPath, indexPath, 1000)
+	store := NewKV(dbPath, indexPath, 1000, 10)
 	N := 10000
 
 	for i := 0; i < N; i++ {
@@ -71,7 +71,7 @@ func TestBasicParallel(t *testing.T) {
 	dbPath := filepath.Join(".", "data.db")
 	indexPath := filepath.Join(".", "indexes.idx")
 
-	store := NewKV(dbPath, indexPath, 500)
+	store := NewKV(dbPath, indexPath, 500, 10)
 	N := 10000
 
 	t.Run("SET1", func(t *testing.T) {

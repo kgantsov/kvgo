@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-const MAX_BLOCKS_NUMBER = 8
-
 type Index struct {
 	Offset int64
 }
@@ -29,19 +27,20 @@ type Entity struct {
 }
 
 type KV struct {
-	Offset    int64
-	Indexes   []map[string]Index
-	MemTable  map[string]string
-	DbPath    string
-	indexPath string
-	blockSize uint32
-	setCh     chan Entity
-	getCh     chan Entity
-	delCh     chan Entity
-	quitCh    chan bool
+	Offset         int64
+	Indexes        []map[string]Index
+	MemTable       map[string]string
+	DbPath         string
+	indexPath      string
+	blockSize      uint32
+	setCh          chan Entity
+	getCh          chan Entity
+	delCh          chan Entity
+	quitCh         chan bool
+	maxBlockNumber int16
 }
 
-func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
+func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV {
 	kv := new(KV)
 	kv.DbPath = dbPath
 	kv.indexPath = indexPath
@@ -51,6 +50,7 @@ func NewKV(dbPath, indexPath string, blockSize uint32) *KV {
 	kv.getCh = make(chan Entity, 1000)
 	kv.delCh = make(chan Entity, 1000)
 	kv.quitCh = make(chan bool)
+	kv.maxBlockNumber = maxBlockNumber
 
 	err := kv.loadIndexes()
 	if err != nil {
@@ -115,7 +115,7 @@ func (kv *KV) loadIndexes() error {
 func (kv *KV) compactIndexes() {
 	newIndex := make(map[string]Index)
 
-	if len(kv.Indexes) > MAX_BLOCKS_NUMBER {
+	if len(kv.Indexes) > int(kv.maxBlockNumber) {
 		for _, index := range kv.Indexes {
 			for k, v := range index {
 				newIndex[k] = v

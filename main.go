@@ -11,7 +11,7 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
-	kv := kv.NewKV(dbPath, indexPath, 4)
+	kv := kv.NewKV(dbPath, indexPath, 4, 10)
 	defer kv.Close()
 
 	kv.Set("first_name", "Ivan")

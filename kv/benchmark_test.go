@@ -11,7 +11,7 @@ import (
 )
 
 func generateData(dbPath, indexPath string, blockSize, numberOfKeys int) {
-	store := NewKV(dbPath, indexPath, 100000)
+	store := NewKV(dbPath, indexPath, 100000, 10)
 
 	for i := 0; i < numberOfKeys; i++ {
 		store.Set(fmt.Sprintf("key_%d", i), fmt.Sprintf("value_%d", i))
@@ -28,7 +28,7 @@ func benchmarkGet(blockSize, numberOfKeys int, b *testing.B) {
 	indexPath := filepath.Join(tmpDir, "indexes.idx")
 
 	generateData(dbPath, indexPath, blockSize, numberOfKeys)
-	store := NewKV(dbPath, indexPath, uint32(blockSize))
+	store := NewKV(dbPath, indexPath, uint32(blockSize), 10)
 	defer store.Close()
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -64,7 +64,7 @@ func benchmarkSet(blockSize, numberOfKeys int, b *testing.B) {
 	indexPath := filepath.Join(tmpDir, "indexes.idx")
 
 	generateData(dbPath, indexPath, blockSize, numberOfKeys)
-	store := NewKV(dbPath, indexPath, uint32(blockSize))
+	store := NewKV(dbPath, indexPath, uint32(blockSize), 10)
 	defer store.Close()
 
 	b.ResetTimer()
@@ -92,7 +92,7 @@ func benchmarkDelete(blockSize, numberOfKeys int, b *testing.B) {
 	indexPath := filepath.Join(tmpDir, "indexes.idx")
 
 	generateData(dbPath, indexPath, blockSize, numberOfKeys)
-	store := NewKV(dbPath, indexPath, uint32(blockSize))
+	store := NewKV(dbPath, indexPath, uint32(blockSize), 10)
 	defer store.Close()
 
 	b.ResetTimer()
@@ -119,7 +119,7 @@ func benchmarkParallelGet(blockSize, numberOfKeys int, b *testing.B) {
 	indexPath := filepath.Join(tmpDir, "indexes.idx")
 
 	generateData(dbPath, indexPath, blockSize, numberOfKeys)
-	store := NewKV(dbPath, indexPath, uint32(blockSize))
+	store := NewKV(dbPath, indexPath, uint32(blockSize), 10)
 	defer store.Close()
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -157,7 +157,7 @@ func benchmarkParallelSet(blockSize, numberOfKeys int, b *testing.B) {
 	indexPath := filepath.Join(tmpDir, "indexes.idx")
 
 	generateData(dbPath, indexPath, blockSize, numberOfKeys)
-	store := NewKV(dbPath, indexPath, uint32(blockSize))
+	store := NewKV(dbPath, indexPath, uint32(blockSize), 10)
 	defer store.Close()
 
 	b.ResetTimer()
@@ -189,7 +189,7 @@ func benchmarkParallelDelete(blockSize, numberOfKeys int, b *testing.B) {
 	indexPath := filepath.Join(tmpDir, "indexes.idx")
 
 	generateData(dbPath, indexPath, blockSize, numberOfKeys)
-	store := NewKV(dbPath, indexPath, uint32(blockSize))
+	store := NewKV(dbPath, indexPath, uint32(blockSize), 10)
 	defer store.Close()
 
 	b.ResetTimer()
