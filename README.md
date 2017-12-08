@@ -6,7 +6,7 @@ A simple embedded key-value store
 
 #### Create storage
 
-    store := NewKV(dbPath, indexPath, 1000)
+    store := NewKV(dbPath, indexPath, 1000, 10)
 
 
 #### Get value
