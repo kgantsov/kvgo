@@ -52,9 +52,7 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	kv.quitCh = make(chan bool)
 	kv.maxBlockNumber = maxBlockNumber
 
-	err := kv.loadIndexes()
-	if err != nil {
-	}
+	kv.loadIndexes()
 
 	go worker(kv)
 
