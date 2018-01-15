@@ -73,7 +73,6 @@ func worker(kv *KV) {
 			entity.Res <- Result{entity.Key, "", true}
 		case <-kv.quitCh:
 			return
-		default:
 		}
 	}
 }
