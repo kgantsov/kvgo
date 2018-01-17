@@ -52,6 +52,19 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	kv.quitCh = make(chan bool)
 	kv.maxBlockNumber = maxBlockNumber
 
+	f, err := os.OpenFile(kv.DbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	st, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	kv.Offset = st.Size()
+	f.Close()
+
 	kv.loadIndexes()
 
 	go worker(kv)
@@ -89,6 +102,7 @@ func (kv *KV) saveIndexes() error {
 	defer file.Close()
 
 	if err == nil {
+		// Delete gob.NewEncoder because does a lot of allocations
 		encoder := gob.NewEncoder(file)
 		encoder.Encode(kv.Indexes)
 	}
@@ -237,14 +251,7 @@ func (kv *KV) Flush() {
 		panic(err)
 	}
 
-	st, err := f.Stat()
-	if err != nil {
-		panic(err)
-	}
-
-	kv.Offset = st.Size()
-
-	index := make(map[string]Index)
+	index := map[string]Index{}
 
 	for k, v := range kv.MemTable {
 		index[k] = Index{kv.Offset}
@@ -275,7 +282,7 @@ func (kv *KV) Flush() {
 
 	kv.Indexes = append(kv.Indexes, index)
 	kv.saveIndexes()
-	kv.MemTable = make(map[string]string)
+	kv.MemTable = map[string]string{}
 
 	f.Close()
 }
