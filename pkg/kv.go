@@ -3,7 +3,6 @@ package kv
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/gob"
 	"fmt"
 	"log"
 	"os"
@@ -28,7 +27,8 @@ type Entity struct {
 
 type KV struct {
 	Offset         int64
-	Indexes        []map[string]Index
+	Index          map[string]Index
+	MemIndex       map[string]Index
 	MemTable       map[string]string
 	DbPath         string
 	indexPath      string
@@ -45,6 +45,8 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	kv.DbPath = dbPath
 	kv.indexPath = indexPath
 	kv.blockSize = blockSize
+	kv.Index = make(map[string]Index)
+	kv.MemIndex = make(map[string]Index)
 	kv.MemTable = make(map[string]string)
 	kv.setCh = make(chan Entity, 1000)
 	kv.getCh = make(chan Entity, 1000)
@@ -90,51 +92,82 @@ func worker(kv *KV) {
 	}
 }
 
-func (kv *KV) saveIndexes() error {
-	// defer TimeTrack(time.Now(), "saveIndexes")
+func (kv *KV) saveIndexes() {
+	f, err := os.OpenFile(kv.indexPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	kv.compactIndexes()
-
-	file, err := os.OpenFile(kv.indexPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer f.Close()
 
-	if err == nil {
-		// Delete gob.NewEncoder because does a lot of allocations
-		encoder := gob.NewEncoder(file)
-		encoder.Encode(kv.Indexes)
-	}
+	for k, v := range kv.MemIndex {
+		buf := bytes.NewBuffer([]byte{})
 
-	return err
-}
-
-func (kv *KV) loadIndexes() error {
-	// defer TimeTrack(time.Now(), "loadIndexes")
-
-	file, err := os.Open(kv.indexPath)
-	if err == nil {
-		decoder := gob.NewDecoder(file)
-		err = decoder.Decode(&kv.Indexes)
-	}
-	defer file.Close()
-
-	return err
-}
-
-func (kv *KV) compactIndexes() {
-	newIndex := make(map[string]Index)
-
-	if len(kv.Indexes) > int(kv.maxBlockNumber) {
-		for _, index := range kv.Indexes {
-			for k, v := range index {
-				newIndex[k] = v
-			}
+		if err = binary.Write(buf, binary.BigEndian, int64(len([]byte(k)))); err != nil {
+			return
+		}
+		if err = binary.Write(buf, binary.BigEndian, v.Offset); err != nil {
+			return
 		}
 
-		kv.Indexes = []map[string]Index{newIndex}
+		if _, err = buf.Write([]byte(k)); err != nil {
+			return
+		}
+
+		if _, err := f.Write(buf.Bytes()); err != nil {
+			log.Fatal(err)
+		}
 	}
+
+	kv.MemIndex = map[string]Index{}
+}
+
+func (kv *KV) loadIndexes() {
+	f, err := os.Open(kv.indexPath)
+	if err != nil {
+		return
+	}
+
+	st, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	size := st.Size()
+
+	var offset int64
+
+	for offset < size {
+		f.Seek(offset, 0)
+
+		data := make([]byte, 16)
+
+		_, err = f.Read(data)
+
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+
+		keyLength := binary.BigEndian.Uint64(data[:8])
+		valLength := uint64(8)
+
+		data = make([]byte, keyLength+valLength)
+		f.Seek(int64(offset+8), 0)
+		_, err = f.Read(data)
+
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+
+		ofs := binary.BigEndian.Uint64(data[:8])
+		key := string(data[8:])
+
+		kv.Index[key] = Index{int64(ofs)}
+
+		offset += 8 + int64(keyLength+valLength)
+	}
+
+	defer f.Close()
 }
 
 func (kv *KV) Close() {
@@ -187,40 +220,39 @@ func get(kv *KV, key string) (string, bool) {
 
 	value := ""
 
-	for i := len(kv.Indexes) - 1; i >= 0; i-- {
-		indexVal, ok := kv.Indexes[i][key]
+	indexVal, ok := kv.Index[key]
 
-		if !ok {
-			continue
-		}
-
-		f.Seek(int64(indexVal.Offset), 0)
-
-		data := make([]byte, 16)
-		_, err := f.Read(data)
-		if err != nil {
-			fmt.Println("Error: ", err)
-		}
-
-		keyLength := binary.BigEndian.Uint64(data[:8])
-		valLength := binary.BigEndian.Uint64(data[8:])
-
-		data = make([]byte, keyLength+valLength)
-		f.Seek(int64(indexVal.Offset+16), 0)
-		_, err = f.Read(data)
-
-		if err != nil {
-			fmt.Println("Error: ", err)
-		}
-
-		value = string(data[keyLength:])
-		if value == "__KVGO_TOMBSTONE__" {
-			return "", false
-		}
-
-		return value, true
+	if !ok {
+		return "", false
 	}
-	return "", false
+
+	f.Seek(int64(indexVal.Offset), 0)
+
+	data := make([]byte, 16)
+
+	_, err = f.Read(data)
+
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+
+	keyLength := binary.BigEndian.Uint64(data[:8])
+	valLength := binary.BigEndian.Uint64(data[8:])
+
+	data = make([]byte, keyLength+valLength)
+	f.Seek(int64(indexVal.Offset+16), 0)
+	_, err = f.Read(data)
+
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+
+	value = string(data[keyLength:])
+	if value == "__KVGO_TOMBSTONE__" {
+		return "", false
+	}
+
+	return value, true
 }
 
 func set(kv *KV, key, value string) {
@@ -251,10 +283,9 @@ func (kv *KV) Flush() {
 		panic(err)
 	}
 
-	index := map[string]Index{}
-
 	for k, v := range kv.MemTable {
-		index[k] = Index{kv.Offset}
+		kv.Index[k] = Index{kv.Offset}
+		kv.MemIndex[k] = Index{kv.Offset}
 		buf := bytes.NewBuffer([]byte{})
 
 		kv.Offset += 16
@@ -280,7 +311,6 @@ func (kv *KV) Flush() {
 		}
 	}
 
-	kv.Indexes = append(kv.Indexes, index)
 	kv.saveIndexes()
 	kv.MemTable = map[string]string{}
 
