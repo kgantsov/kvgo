@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	kv "github.com/kgantsov/kvgo/pkg"
 )
@@ -14,7 +16,22 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
+	sigs := make(chan os.Signal, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
 	kv := kv.NewKV(dbPath, indexPath, 1000, 10000)
+
+	go func() {
+		sig := <-sigs
+		fmt.Println()
+		fmt.Println(sig)
+
+		fmt.Println("Saving data on disk...")
+
+		kv.Close()
+		os.Exit(0)
+	}()
 
 	service := ":7777"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
