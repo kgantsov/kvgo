@@ -33,30 +33,30 @@ A simple embedded key-value store
 
     goos: darwin
     goarch: amd64
-    pkg: github.com/kgantsov/kvgo/kv
-    BenchmarkGet_100_1000-4                 	   30000	     61341 ns/op	   0.15 MB/s	     344 B/op	       9 allocs/op
-    BenchmarkParallelGet_100_1000-4         	   50000	     34292 ns/op	   0.26 MB/s	     341 B/op	       9 allocs/op
-    BenchmarkGet_500_10000-4                	   30000	     52669 ns/op	   0.19 MB/s	     358 B/op	      10 allocs/op
-    BenchmarkParallelGet_500_10000-4        	   50000	     36484 ns/op	   0.27 MB/s	     357 B/op	       9 allocs/op
-    BenchmarkGet_1000_100000-4              	   30000	     64856 ns/op	   0.17 MB/s	     359 B/op	      10 allocs/op
-    BenchmarkParallelGet_1000_100000-4      	   50000	     48720 ns/op	   0.18 MB/s	     353 B/op	       9 allocs/op
-    BenchmarkGet_1000_500000-4              	   30000	     60976 ns/op	   0.20 MB/s	     360 B/op	      10 allocs/op
-    BenchmarkParallelGet_1000_500000-4      	   50000	     38197 ns/op	   0.31 MB/s	     354 B/op	       9 allocs/op
-    BenchmarkSet_100_1000-4                 	   20000	     95725 ns/op	   0.11 MB/s	   14482 B/op	     216 allocs/op
-    BenchmarkParallelSet_100_1000-4         	   30000	    125904 ns/op	   0.09 MB/s	   21012 B/op	     304 allocs/op
-    BenchmarkSet_500_10000-4                	   50000	     62447 ns/op	   0.18 MB/s	    8257 B/op	     119 allocs/op
-    BenchmarkParallelSet_500_10000-4        	   50000	     53983 ns/op	   0.20 MB/s	    7862 B/op	     115 allocs/op
-    BenchmarkSet_1000_100000-4              	   20000	    100904 ns/op	   0.11 MB/s	   15748 B/op	     220 allocs/op
-    BenchmarkParallelSet_1000_100000-4      	   20000	     72617 ns/op	   0.15 MB/s	   15014 B/op	     209 allocs/op
-    BenchmarkSet_1000_500000-4              	   10000	    376283 ns/op	   0.03 MB/s	   76209 B/op	    1020 allocs/op
-    BenchmarkParallelSet_1000_500000-4      	   10000	    421233 ns/op	   0.03 MB/s	   69217 B/op	     918 allocs/op
-    BenchmarkDelete_100_1000-4              	   30000	    130032 ns/op	   0.14 MB/s	   21756 B/op	     314 allocs/op
-    BenchmarkParallelDelete_100_1000-4      	   30000	    131961 ns/op	   0.14 MB/s	   20573 B/op	     296 allocs/op
-    BenchmarkDelete_500_10000-4             	   50000	     57667 ns/op	   0.31 MB/s	    8241 B/op	     117 allocs/op
-    BenchmarkParallelDelete_500_10000-4     	   50000	     46781 ns/op	   0.38 MB/s	    8086 B/op	     115 allocs/op
-    BenchmarkDelete_1000_100000-4           	   20000	     92757 ns/op	   0.19 MB/s	   15730 B/op	     218 allocs/op
-    BenchmarkParallelDelete_1000_100000-4   	   20000	     77044 ns/op	   0.23 MB/s	   14246 B/op	     196 allocs/op
-    BenchmarkDelete_1000_500000-4           	   10000	    378799 ns/op	   0.05 MB/s	   76185 B/op	    1018 allocs/op
-    BenchmarkParallelDelete_1000_500000-4   	   10000	    360940 ns/op	   0.05 MB/s	   69172 B/op	     916 allocs/op
+    pkg: github.com/kgantsov/kvgo/pkg
+    BenchmarkGet_100_1000-4                 	   50000	     28731 ns/op	   0.31 MB/s	     344 B/op	       9 allocs/op
+    BenchmarkParallelGet_100_1000-4         	   50000	     27585 ns/op	   0.33 MB/s	     342 B/op	       9 allocs/op
+    BenchmarkGet_500_10000-4                	   50000	     24205 ns/op	   0.41 MB/s	     358 B/op	      10 allocs/op
+    BenchmarkParallelGet_500_10000-4        	   50000	     25382 ns/op	   0.39 MB/s	     357 B/op	       9 allocs/op
+    BenchmarkGet_1000_100000-4              	   50000	     23647 ns/op	   0.47 MB/s	     359 B/op	      10 allocs/op
+    BenchmarkParallelGet_1000_100000-4      	   50000	     25934 ns/op	   0.42 MB/s	     359 B/op	       9 allocs/op
+    BenchmarkGet_1000_500000-4              	   50000	     24569 ns/op	   0.49 MB/s	     360 B/op	      10 allocs/op
+    BenchmarkParallelGet_1000_500000-4      	   50000	     26600 ns/op	   0.45 MB/s	     358 B/op	       9 allocs/op
+    BenchmarkSet_100_1000-4                 	  100000	     13553 ns/op	   0.81 MB/s	     903 B/op	      21 allocs/op
+    BenchmarkParallelSet_100_1000-4         	  100000	     18527 ns/op	   0.65 MB/s	     899 B/op	      21 allocs/op
+    BenchmarkSet_500_10000-4                	  200000	     11203 ns/op	   1.07 MB/s	    1003 B/op	      21 allocs/op
+    BenchmarkParallelSet_500_10000-4        	  100000	     13878 ns/op	   0.86 MB/s	     993 B/op	      21 allocs/op
+    BenchmarkSet_1000_100000-4              	  200000	     10785 ns/op	   1.11 MB/s	     967 B/op	      21 allocs/op
+    BenchmarkParallelSet_1000_100000-4      	  200000	     13595 ns/op	   0.88 MB/s	     954 B/op	      20 allocs/op
+    BenchmarkSet_1000_500000-4              	  200000	      9878 ns/op	   1.21 MB/s	     926 B/op	      21 allocs/op
+    BenchmarkParallelSet_1000_500000-4      	  200000	     11104 ns/op	   1.08 MB/s	     922 B/op	      21 allocs/op
+    BenchmarkDelete_100_1000-4              	  100000	     12323 ns/op	   1.46 MB/s	     887 B/op	      19 allocs/op
+    BenchmarkParallelDelete_100_1000-4      	  100000	     16581 ns/op	   1.09 MB/s	     884 B/op	      19 allocs/op
+    BenchmarkDelete_500_10000-4             	  200000	     10511 ns/op	   1.71 MB/s	     987 B/op	      19 allocs/op
+    BenchmarkParallelDelete_500_10000-4     	  200000	     13687 ns/op	   1.32 MB/s	     985 B/op	      19 allocs/op
+    BenchmarkDelete_1000_100000-4           	  200000	     10051 ns/op	   1.79 MB/s	     950 B/op	      19 allocs/op
+    BenchmarkParallelDelete_1000_100000-4   	  200000	     12346 ns/op	   1.46 MB/s	     945 B/op	      18 allocs/op
+    BenchmarkDelete_1000_500000-4           	  200000	      9533 ns/op	   1.89 MB/s	     910 B/op	      19 allocs/op
+    BenchmarkParallelDelete_1000_500000-4   	  200000	     11897 ns/op	   1.51 MB/s	     907 B/op	      18 allocs/op
     PASS
-    ok  	github.com/kgantsov/kvgo/kv	338.588s
+    ok  	github.com/kgantsov/kvgo/pkg	299.467s
