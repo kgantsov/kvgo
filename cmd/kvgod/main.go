@@ -20,7 +20,9 @@ func main() {
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
+	fmt.Printf("Creating storage...\n")
 	kv := kv.NewKV(dbPath, indexPath, 1000, 10000)
+	fmt.Printf("Storage was succesfully created\n")
 
 	go func() {
 		sig := <-sigs
@@ -33,11 +35,13 @@ func main() {
 		os.Exit(0)
 	}()
 
-	service := ":7777"
+	service := ":56379"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
+
+	fmt.Printf("Listening on port: %s\n", service)
 
 	for {
 		conn, err := listener.Accept()
