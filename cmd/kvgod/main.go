@@ -16,6 +16,11 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
+	port := ":56379"
+	listenAndServ(port)
+}
+
+func listenAndServ(port string) {
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -35,13 +40,12 @@ func main() {
 		os.Exit(0)
 	}()
 
-	service := ":56379"
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", port)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	fmt.Printf("Listening on port: %s\n", service)
+	fmt.Printf("Listening on port: %s\n", port)
 
 	for {
 		conn, err := listener.Accept()
