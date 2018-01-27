@@ -10,12 +10,16 @@ import (
 	"syscall"
 
 	kv "github.com/kgantsov/kvgo/pkg"
+	log "github.com/sirupsen/logrus"
 )
 
 const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{})
+	log.SetLevel(log.DebugLevel)
+
 	port := ":56379"
 	listenAndServ(port)
 }
@@ -25,16 +29,15 @@ func listenAndServ(port string) {
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	fmt.Printf("Creating storage...\n")
+	log.Info("Creating storage...\n")
 	kv := kv.NewKV(dbPath, indexPath, 1000, 10000)
-	fmt.Printf("Storage was succesfully created\n")
+	log.Info("Storage was succesfully created\n")
 
 	go func() {
 		sig := <-sigs
-		fmt.Println()
-		fmt.Println(sig)
+		log.Info(sig)
 
-		fmt.Println("Saving data on disk...")
+		log.Info("Saving data on disk...")
 
 		kv.Close()
 		os.Exit(0)
@@ -45,12 +48,12 @@ func listenAndServ(port string) {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	fmt.Printf("Listening on port: %s\n", port)
+	log.Info("Listening on port: ", port)
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+			log.Fatal("Fatal error: ", err.Error())
 			continue
 		}
 		go handleClient(kv, conn)
@@ -65,7 +68,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 		readLen, err := conn.Read(request)
 
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 			break
 		}
 
@@ -89,7 +92,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				key := scanner.Text()
 
-				fmt.Println("sent GET command", key)
+				log.Debug("GET key: ", key)
 				value, ok := kv.Get(key)
 				if ok {
 					conn.Write([]byte(fmt.Sprintf("$%d\r\n", len(value))))
@@ -106,7 +109,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				value := scanner.Text()
 
-				fmt.Println("sent SET command", key, value)
+				log.Debug("SET key: ", key, " with value: ", value)
 				kv.Set(key, value)
 				conn.Write([]byte(fmt.Sprintf("+OK\r\n")))
 			case "DEL":
@@ -114,7 +117,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				key := scanner.Text()
 
-				fmt.Println("sent DELETE command", key)
+				log.Debug("DELETE key: ", key)
 				kv.Delete(key)
 				conn.Write([]byte(fmt.Sprintf(":1\r\n")))
 			default:
@@ -126,7 +129,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 
 func checkError(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+		log.Fatal("Fatal error: ", err.Error())
 		os.Exit(1)
 	}
 }
