@@ -17,7 +17,7 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
-	log.SetFormatter(&log.TextFormatter{})
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	log.SetLevel(log.DebugLevel)
 
 	port := ":56379"
