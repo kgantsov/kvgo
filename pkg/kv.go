@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"log"
 	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Index struct {
@@ -145,7 +146,7 @@ func (kv *KV) loadIndexes() {
 		_, err = f.Read(data)
 
 		if err != nil {
-			fmt.Println("Error: ", err)
+			log.Fatal("Error: ", err)
 		}
 
 		keyLength := binary.BigEndian.Uint64(data[:8])
@@ -156,7 +157,7 @@ func (kv *KV) loadIndexes() {
 		_, err = f.Read(data)
 
 		if err != nil {
-			fmt.Println("Error: ", err)
+			log.Fatal("Error: ", err)
 		}
 
 		ofs := binary.BigEndian.Uint64(data[:8])
@@ -171,13 +172,18 @@ func (kv *KV) loadIndexes() {
 }
 
 func (kv *KV) Close() {
-	// defer TimeTrack(time.Now(), "Close")
+	if log.GetLevel() == log.DebugLevel {
+		defer TimeTrack(time.Now(), "Close")
+	}
+
 	kv.Flush()
 	kv.quitCh <- true
 }
 
 func (kv *KV) Set(key, value string) {
-	// defer TimeTrack(time.Now(), fmt.Sprintf("Set `%s` with value `%s`", key, value))
+	if log.GetLevel() == log.DebugLevel {
+		defer TimeTrack(time.Now(), fmt.Sprintf("Set `%s` with value `%s`", key, value))
+	}
 
 	resC := make(chan Result)
 	kv.setCh <- Entity{key, value, resC}
@@ -185,7 +191,9 @@ func (kv *KV) Set(key, value string) {
 }
 
 func (kv *KV) Get(key string) (string, bool) {
-	// defer TimeTrack(time.Now(), fmt.Sprintf("Get `%s`", key))
+	if log.GetLevel() == log.DebugLevel {
+		defer TimeTrack(time.Now(), fmt.Sprintf("Get `%s`", key))
+	}
 
 	resC := make(chan Result)
 	kv.getCh <- Entity{key, "", resC}
@@ -194,7 +202,9 @@ func (kv *KV) Get(key string) (string, bool) {
 }
 
 func (kv *KV) Delete(key string) {
-	// defer TimeTrack(time.Now(), fmt.Sprintf("Delete `%s`", key))
+	if log.GetLevel() == log.DebugLevel {
+		defer TimeTrack(time.Now(), fmt.Sprintf("Delete `%s`", key))
+	}
 
 	resC := make(chan Result)
 	kv.delCh <- Entity{key, "", resC}
@@ -204,7 +214,8 @@ func (kv *KV) Delete(key string) {
 func get(kv *KV, key string) (string, bool) {
 	val, ok := kv.MemTable[key]
 	if ok {
-		// fmt.Printf("Key: %s found in memory\n", key)
+		log.Info(fmt.Sprintf("Key: %s found in memory", key))
+
 		if val == "__KVGO_TOMBSTONE__" {
 			return "", false
 		}
@@ -233,7 +244,7 @@ func get(kv *KV, key string) (string, bool) {
 	_, err = f.Read(data)
 
 	if err != nil {
-		fmt.Println("Error: ", err)
+		log.Fatal("Error: ", err)
 	}
 
 	keyLength := binary.BigEndian.Uint64(data[:8])
@@ -244,7 +255,7 @@ func get(kv *KV, key string) (string, bool) {
 	_, err = f.Read(data)
 
 	if err != nil {
-		fmt.Println("Error: ", err)
+		log.Fatal("Error: ", err)
 	}
 
 	value = string(data[keyLength:])
@@ -272,7 +283,9 @@ func delete(kv *KV, key string) {
 }
 
 func (kv *KV) Flush() {
-	// defer TimeTrack(time.Now(), "Flush")
+	if log.GetLevel() == log.DebugLevel {
+		defer TimeTrack(time.Now(), "Flush")
+	}
 
 	if len(kv.MemTable) == 0 {
 		return
@@ -319,5 +332,5 @@ func (kv *KV) Flush() {
 
 func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	log.Printf("%s took %s", name, elapsed)
+	log.Debug(fmt.Sprintf("%s took %s", name, elapsed))
 }

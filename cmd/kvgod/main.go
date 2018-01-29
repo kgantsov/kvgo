@@ -18,7 +18,7 @@ const indexPath = "./indexes.idx"
 
 func main() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
-	log.SetLevel(log.DebugLevel)
+	// log.SetLevel(log.DebugLevel)
 
 	port := ":56379"
 	listenAndServ(port)
@@ -92,7 +92,6 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				key := scanner.Text()
 
-				log.Debug("GET key: ", key)
 				value, ok := kv.Get(key)
 				if ok {
 					conn.Write([]byte(fmt.Sprintf("$%d\r\n", len(value))))
@@ -109,7 +108,6 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				value := scanner.Text()
 
-				log.Debug("SET key: ", key, " with value: ", value)
 				kv.Set(key, value)
 				conn.Write([]byte(fmt.Sprintf("+OK\r\n")))
 			case "DEL":
@@ -117,7 +115,6 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				key := scanner.Text()
 
-				log.Debug("DELETE key: ", key)
 				kv.Delete(key)
 				conn.Write([]byte(fmt.Sprintf(":1\r\n")))
 			default:
