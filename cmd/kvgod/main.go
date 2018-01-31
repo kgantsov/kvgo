@@ -29,9 +29,9 @@ func listenAndServ(port string) {
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Info("Creating storage...\n")
+	log.Info("Creating storage...")
 	kv := kv.NewKV(dbPath, indexPath, 1000, 10000)
-	log.Info("Storage was succesfully created\n")
+	log.Info("Storage was succesfully created")
 
 	go func() {
 		sig := <-sigs
@@ -48,7 +48,7 @@ func listenAndServ(port string) {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	log.Info("Listening on port: ", port)
+	log.Info("Listening on port: ", port[1:])
 
 	for {
 		conn, err := listener.Accept()
