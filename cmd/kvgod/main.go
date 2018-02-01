@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -17,8 +18,18 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
+	logLevel := flag.String("log_level", "info", "Log level")
+	flag.Parse()
+
+	level, err := log.ParseLevel(*logLevel)
+
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
-	// log.SetLevel(log.DebugLevel)
+
+	if err != nil {
+		log.Fatal("Fatal error: ", err.Error())
+		return
+	}
+	log.SetLevel(level)
 
 	port := ":56379"
 	listenAndServ(port)
