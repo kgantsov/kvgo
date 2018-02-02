@@ -27,7 +27,6 @@ func main() {
 
 	if err != nil {
 		log.Fatal("Fatal error: ", err.Error())
-		return
 	}
 	log.SetLevel(level)
 
@@ -64,7 +63,7 @@ func listenAndServ(port string) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Fatal("Fatal error: ", err.Error())
+			log.Error("Fatal error: ", err.Error())
 			continue
 		}
 		go handleClient(kv, conn)
@@ -79,7 +78,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 		readLen, err := conn.Read(request)
 
 		if err != nil {
-			log.Fatal(err)
+			log.Debug(err)
 			break
 		}
 
@@ -95,7 +94,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 
 			scanner.Scan()
 			scanner.Scan()
-			op = scanner.Text()
+			op = strings.ToUpper(scanner.Text())
 
 			switch op {
 			case "GET":
@@ -138,6 +137,5 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 func checkError(err error) {
 	if err != nil {
 		log.Fatal("Fatal error: ", err.Error())
-		os.Exit(1)
 	}
 }

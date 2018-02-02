@@ -116,7 +116,7 @@ func (kv *KV) saveIndexes() {
 		}
 
 		if _, err := f.Write(buf.Bytes()); err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 	}
 
@@ -146,7 +146,7 @@ func (kv *KV) loadIndexes() {
 		_, err = f.Read(data)
 
 		if err != nil {
-			log.Fatal("Error: ", err)
+			log.Error("Error: ", err)
 		}
 
 		keyLength := binary.BigEndian.Uint64(data[:8])
@@ -157,7 +157,7 @@ func (kv *KV) loadIndexes() {
 		_, err = f.Read(data)
 
 		if err != nil {
-			log.Fatal("Error: ", err)
+			log.Error("Error: ", err)
 		}
 
 		ofs := binary.BigEndian.Uint64(data[:8])
@@ -244,7 +244,7 @@ func get(kv *KV, key string) (string, bool) {
 	_, err = f.Read(data)
 
 	if err != nil {
-		log.Fatal("Error: ", err)
+		log.Error("Error: ", err)
 	}
 
 	keyLength := binary.BigEndian.Uint64(data[:8])
@@ -255,7 +255,7 @@ func get(kv *KV, key string) (string, bool) {
 	_, err = f.Read(data)
 
 	if err != nil {
-		log.Fatal("Error: ", err)
+		log.Error("Error: ", err)
 	}
 
 	value = string(data[keyLength:])
@@ -320,7 +320,7 @@ func (kv *KV) Flush() {
 		kv.Offset += int64(len(v))
 
 		if _, err := f.Write(buf.Bytes()); err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 	}
 
