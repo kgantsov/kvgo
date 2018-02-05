@@ -1,5 +1,5 @@
 # kvgo
-A simple key-value on-disk database that could be embedded in the app or run as a separate server and used trough redis protocol
+A simple key-value on-disk database that could be embedded in the app or run as a separate server and could be used through a redis protocol
 
 
 ## Using kvgod server using redis client
