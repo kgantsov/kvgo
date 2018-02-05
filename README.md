@@ -1,5 +1,5 @@
 # kvgo
-A simple embedded key-value store
+A simple key-value on-disk database that could be embedded in the app or run as a separate server and used trough redis protocol
 
 
 ## Using kvgod server using redis client
