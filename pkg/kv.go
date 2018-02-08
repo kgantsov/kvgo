@@ -128,6 +128,7 @@ func (kv *KV) loadIndexes() {
 	if err != nil {
 		return
 	}
+	defer f.Close()
 
 	st, err := f.Stat()
 	if err != nil {
@@ -167,8 +168,6 @@ func (kv *KV) loadIndexes() {
 
 		offset += 8 + int64(keyLength+valLength)
 	}
-
-	defer f.Close()
 }
 
 func (kv *KV) Close() {
