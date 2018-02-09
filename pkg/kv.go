@@ -59,6 +59,7 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
 
 	st, err := f.Stat()
 	if err != nil {
@@ -66,7 +67,6 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	}
 
 	kv.Offset = st.Size()
-	f.Close()
 
 	kv.loadIndexes()
 
@@ -225,7 +225,6 @@ func get(kv *KV, key string) (string, bool) {
 	if err != nil {
 		return "", false
 	}
-
 	defer f.Close()
 
 	value := ""
@@ -294,6 +293,7 @@ func (kv *KV) Flush() {
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
 
 	for k, v := range kv.MemTable {
 		kv.Index[k] = Index{kv.Offset}
@@ -325,8 +325,6 @@ func (kv *KV) Flush() {
 
 	kv.saveIndexes()
 	kv.MemTable = map[string]string{}
-
-	f.Close()
 }
 
 func TimeTrack(start time.Time, name string) {
