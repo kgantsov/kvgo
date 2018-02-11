@@ -64,10 +64,13 @@ A simple key-value on-disk database that could be embedded in the app or run as 
 
 #### Install
 
-    go get -u github.com/kgantsov/kvgo
+    go get -u github.com/kgantsov/kvgo/pkg/kv
 
 #### Create storage
 
+    import (
+        kvgo "github.com/kgantsov/kvgo/pkg/kv"
+    )
     store := kvgo.NewKV(dbPath, indexPath, 1000, 10)
 
 
