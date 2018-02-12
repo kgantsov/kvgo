@@ -10,7 +10,7 @@ import (
 	"strings"
 	"syscall"
 
-	kv "github.com/kgantsov/kvgo/pkg"
+	kv "github.com/kgantsov/kvgo/pkg/kv"
 	log "github.com/sirupsen/logrus"
 )
 
