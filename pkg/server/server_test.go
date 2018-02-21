@@ -2,6 +2,9 @@ package server
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-redis/redis"
@@ -9,8 +12,11 @@ import (
 
 func TestBasic(t *testing.T) {
 	port := ":56379"
-	const dbPath = "./data.db"
-	const indexPath = "./indexes.idx"
+	tmpDir, _ := ioutil.TempDir("", "kvgo_tests")
+	defer os.RemoveAll(tmpDir)
+
+	dbPath := filepath.Join(".", "data.db")
+	indexPath := filepath.Join(".", "indexes.idx")
 
 	go func() {
 		ListenAndServ(port, dbPath, indexPath)
