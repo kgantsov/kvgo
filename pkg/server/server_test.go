@@ -21,6 +21,7 @@ func TestBasic(t *testing.T) {
 	go func() {
 		ListenAndServ(port, dbPath, indexPath)
 	}()
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:56379",
 		Password: "",
@@ -38,24 +39,20 @@ func TestBasic(t *testing.T) {
 	}
 	fmt.Println("key", val)
 
+	if val != "value" {
+		t.Errorf("Expected `value`. Got `%v`\n", val)
+	}
+
 	val2, err := client.Get("key2").Result()
-	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
-	} else if err != nil {
-		t.Errorf("Expected `nil`. Got `%v`\n", err)
-	} else {
-		fmt.Println("key2", val2)
+	if err != redis.Nil {
+		t.Errorf("Expected `%v`. Got `%v`\n", redis.Nil, val2)
 	}
 
 	client.Del("key").Result()
 
 	val, err = client.Get("key").Result()
-	if err == redis.Nil {
-		fmt.Println("key does not exist")
-	} else if err != nil {
-		t.Errorf("Expected `nil`. Got `%v`\n", err)
-	} else {
-		fmt.Println("key", val2)
+	if err != redis.Nil {
+		t.Errorf("Expected `value`. Got `%v`\n", val)
 	}
 	client.Close()
 }
