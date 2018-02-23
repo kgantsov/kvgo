@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,7 +36,6 @@ func TestBasic(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected `nil`. Got `%v`\n", err)
 	}
-	fmt.Println("key", val)
 
 	if val != "value" {
 		t.Errorf("Expected `value`. Got `%v`\n", val)
