@@ -45,11 +45,11 @@ func ListenAndServ(port, dbPath, indexPath string) {
 			log.Error("Fatal error: ", err.Error())
 			continue
 		}
-		go HandleClient(kv, conn)
+		go handleClient(kv, conn)
 	}
 }
 
-func HandleClient(kv *kv.KV, conn net.Conn) {
+func handleClient(kv *kv.KV, conn net.Conn) {
 	request := make([]byte, 128)
 	defer conn.Close()
 
