@@ -13,6 +13,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ListenAndServ accepts incoming connections on the creating a new service goroutine for each.
+// The service goroutines read requests and then replies to them.
+// It exits program if it can not start tcp listener.
 func ListenAndServ(port, dbPath, indexPath string) {
 	sigs := make(chan os.Signal, 1)
 
