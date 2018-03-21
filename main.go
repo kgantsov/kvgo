@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kgantsov/kvgo/pkg"
+	"github.com/kgantsov/kvgo/pkg/kv"
 )
 
 const dbPath = "./data.db"
