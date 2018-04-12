@@ -215,94 +215,94 @@ func BenchmarkGet_100_1000(b *testing.B) {
 	benchmarkGet(100, 1000, b)
 }
 
-func BenchmarkParallelGet_100_1000(b *testing.B) {
-	benchmarkParallelGet(100, 1000, b)
-}
-
 func BenchmarkGet_500_10000(b *testing.B) {
 	benchmarkGet(500, 10000, b)
-}
-
-func BenchmarkParallelGet_500_10000(b *testing.B) {
-	benchmarkParallelGet(500, 10000, b)
 }
 
 func BenchmarkGet_1000_100000(b *testing.B) {
 	benchmarkGet(1000, 100000, b)
 }
 
-func BenchmarkParallelGet_1000_100000(b *testing.B) {
-	benchmarkParallelGet(1000, 100000, b)
-}
-
 func BenchmarkGet_1000_500000(b *testing.B) {
 	benchmarkGet(1000, 500000, b)
-}
-
-func BenchmarkParallelGet_1000_500000(b *testing.B) {
-	benchmarkParallelGet(1000, 500000, b)
 }
 
 func BenchmarkSet_100_1000(b *testing.B) {
 	benchmarkSet(100, 1000, b)
 }
 
-func BenchmarkParallelSet_100_1000(b *testing.B) {
-	benchmarkParallelSet(100, 1000, b)
-}
-
 func BenchmarkSet_500_10000(b *testing.B) {
 	benchmarkSet(500, 10000, b)
-}
-
-func BenchmarkParallelSet_500_10000(b *testing.B) {
-	benchmarkParallelSet(500, 10000, b)
 }
 
 func BenchmarkSet_1000_100000(b *testing.B) {
 	benchmarkSet(1000, 100000, b)
 }
 
-func BenchmarkParallelSet_1000_100000(b *testing.B) {
-	benchmarkParallelSet(1000, 100000, b)
-}
-
 func BenchmarkSet_1000_500000(b *testing.B) {
 	benchmarkSet(1000, 500000, b)
-}
-
-func BenchmarkParallelSet_1000_500000(b *testing.B) {
-	benchmarkParallelSet(1000, 500000, b)
 }
 
 func BenchmarkDelete_100_1000(b *testing.B) {
 	benchmarkDelete(100, 1000, b)
 }
 
-func BenchmarkParallelDelete_100_1000(b *testing.B) {
-	benchmarkParallelDelete(100, 1000, b)
-}
-
 func BenchmarkDelete_500_10000(b *testing.B) {
 	benchmarkDelete(500, 10000, b)
-}
-
-func BenchmarkParallelDelete_500_10000(b *testing.B) {
-	benchmarkParallelDelete(500, 10000, b)
 }
 
 func BenchmarkDelete_1000_100000(b *testing.B) {
 	benchmarkDelete(1000, 100000, b)
 }
 
-func BenchmarkParallelDelete_1000_100000(b *testing.B) {
-	benchmarkParallelDelete(1000, 100000, b)
-}
-
 func BenchmarkDelete_1000_500000(b *testing.B) {
 	benchmarkDelete(1000, 500000, b)
 }
 
-func BenchmarkParallelDelete_1000_500000(b *testing.B) {
-	benchmarkParallelDelete(1000, 500000, b)
-}
+// func BenchmarkParallelGet_100_1000(b *testing.B) {
+// 	benchmarkParallelGet(100, 1000, b)
+// }
+
+// func BenchmarkParallelGet_500_10000(b *testing.B) {
+// 	benchmarkParallelGet(500, 10000, b)
+// }
+
+// func BenchmarkParallelGet_1000_100000(b *testing.B) {
+// 	benchmarkParallelGet(1000, 100000, b)
+// }
+
+// func BenchmarkParallelGet_1000_500000(b *testing.B) {
+// 	benchmarkParallelGet(1000, 500000, b)
+// }
+
+// func BenchmarkParallelSet_100_1000(b *testing.B) {
+// 	benchmarkParallelSet(100, 1000, b)
+// }
+
+// func BenchmarkParallelSet_500_10000(b *testing.B) {
+// 	benchmarkParallelSet(500, 10000, b)
+// }
+
+// func BenchmarkParallelSet_1000_100000(b *testing.B) {
+// 	benchmarkParallelSet(1000, 100000, b)
+// }
+
+// func BenchmarkParallelSet_1000_500000(b *testing.B) {
+// 	benchmarkParallelSet(1000, 500000, b)
+// }
+
+// func BenchmarkParallelDelete_100_1000(b *testing.B) {
+// 	benchmarkParallelDelete(100, 1000, b)
+// }
+
+// func BenchmarkParallelDelete_500_10000(b *testing.B) {
+// 	benchmarkParallelDelete(500, 10000, b)
+// }
+
+// func BenchmarkParallelDelete_1000_100000(b *testing.B) {
+// 	benchmarkParallelDelete(1000, 100000, b)
+// }
+
+// func BenchmarkParallelDelete_1000_500000(b *testing.B) {
+// 	benchmarkParallelDelete(1000, 500000, b)
+// }
