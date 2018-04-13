@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -12,18 +13,6 @@ import (
 
 type Index struct {
 	Offset int64
-}
-
-type Result struct {
-	Key   string
-	Value string
-	Ok    bool
-}
-
-type Entity struct {
-	Key   string
-	Value string
-	Res   chan Result
 }
 
 type KV struct {
@@ -34,11 +23,8 @@ type KV struct {
 	DbPath         string
 	indexPath      string
 	blockSize      uint32
-	setCh          chan Entity
-	getCh          chan Entity
-	delCh          chan Entity
-	quitCh         chan bool
 	maxBlockNumber int16
+	lock           sync.RWMutex
 }
 
 func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV {
@@ -49,10 +35,6 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	kv.Index = make(map[string]Index)
 	kv.MemIndex = make(map[string]Index)
 	kv.MemTable = make(map[string]string)
-	kv.setCh = make(chan Entity, 1000)
-	kv.getCh = make(chan Entity, 1000)
-	kv.delCh = make(chan Entity, 1000)
-	kv.quitCh = make(chan bool)
 	kv.maxBlockNumber = maxBlockNumber
 
 	f, err := os.OpenFile(kv.DbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -70,27 +52,7 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 
 	kv.loadIndexes()
 
-	go worker(kv)
-
 	return kv
-}
-
-func worker(kv *KV) {
-	for {
-		select {
-		case entity := <-kv.setCh:
-			set(kv, entity.Key, entity.Value)
-			entity.Res <- Result{entity.Key, entity.Value, true}
-		case entity := <-kv.getCh:
-			val, ok := get(kv, entity.Key)
-			entity.Res <- Result{entity.Key, val, ok}
-		case entity := <-kv.delCh:
-			delete(kv, entity.Key)
-			entity.Res <- Result{entity.Key, "", true}
-		case <-kv.quitCh:
-			return
-		}
-	}
 }
 
 func (kv *KV) saveIndexes() {
@@ -176,7 +138,6 @@ func (kv *KV) Close() {
 	}
 
 	kv.Flush()
-	kv.quitCh <- true
 }
 
 func (kv *KV) Set(key, value string) {
@@ -184,9 +145,9 @@ func (kv *KV) Set(key, value string) {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Set `%s` with value `%s`", key, value))
 	}
 
-	resC := make(chan Result)
-	kv.setCh <- Entity{key, value, resC}
-	<-resC
+	kv.lock.Lock()
+	set(kv, key, value)
+	kv.lock.Unlock()
 }
 
 func (kv *KV) Get(key string) (string, bool) {
@@ -194,10 +155,11 @@ func (kv *KV) Get(key string) (string, bool) {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Get `%s`", key))
 	}
 
-	resC := make(chan Result)
-	kv.getCh <- Entity{key, "", resC}
-	res := <-resC
-	return res.Value, res.Ok
+	kv.lock.RLock()
+	val, ok := get(kv, key)
+	kv.lock.RUnlock()
+
+	return val, ok
 }
 
 func (kv *KV) Delete(key string) {
@@ -205,9 +167,9 @@ func (kv *KV) Delete(key string) {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Delete `%s`", key))
 	}
 
-	resC := make(chan Result)
-	kv.delCh <- Entity{key, "", resC}
-	<-resC
+	kv.lock.Lock()
+	delete(kv, key)
+	kv.lock.Unlock()
 }
 
 func get(kv *KV, key string) (string, bool) {
