@@ -26,7 +26,7 @@ func main() {
 	kv.Set("status", "ACTIVE")
 
 	kv.Set("last_name", "Andersson")
-	kv.Flush()
+	kv.SyncToDisk()
 	kv.Delete("first_name")
 
 	kv.Set("OPL", "KKKKo")

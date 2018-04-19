@@ -35,7 +35,7 @@ func TestBasic(t *testing.T) {
 		value, _ := store.Get(fmt.Sprintf("key_%d", i))
 		assetEqual(t, fmt.Sprintf("key_%d", i), expextedValue, value)
 	}
-	store.Flush()
+	store.SyncToDisk()
 
 	for i := 0; i < N; i++ {
 		expextedValue := fmt.Sprintf("value_%d", i)
@@ -54,7 +54,7 @@ func TestBasic(t *testing.T) {
 		assetEqual(t, fmt.Sprintf("key_%d", i), false, ok)
 	}
 
-	store.Flush()
+	store.SyncToDisk()
 
 	for i := 0; i < N; i++ {
 		_, ok := store.Get(fmt.Sprintf("key_%d", i))

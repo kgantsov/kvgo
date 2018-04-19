@@ -137,7 +137,7 @@ func (kv *KV) Close() {
 		defer TimeTrack(time.Now(), "Close")
 	}
 
-	kv.Flush()
+	kv.SyncToDisk()
 }
 
 func (kv *KV) Set(key, value string) {
@@ -230,7 +230,7 @@ func set(kv *KV, key, value string) {
 	kv.MemTable[key] = value
 
 	if uint32(len(kv.MemTable)) == kv.blockSize {
-		kv.Flush()
+		kv.SyncToDisk()
 	}
 }
 
@@ -238,13 +238,13 @@ func delete(kv *KV, key string) {
 	kv.MemTable[key] = "__KVGO_TOMBSTONE__"
 
 	if uint32(len(kv.MemTable)) == kv.blockSize {
-		kv.Flush()
+		kv.SyncToDisk()
 	}
 }
 
-func (kv *KV) Flush() {
+func (kv *KV) SyncToDisk() {
 	if log.GetLevel() == log.DebugLevel {
-		defer TimeTrack(time.Now(), "Flush")
+		defer TimeTrack(time.Now(), "SyncToDisk")
 	}
 
 	if len(kv.MemTable) == 0 {
