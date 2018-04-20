@@ -50,42 +50,12 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 
 	kv.Offset = st.Size()
 
-	kv.loadIndexes()
+	kv.loadIndex()
 
 	return kv
 }
 
-func (kv *KV) saveIndexes() {
-	f, err := os.OpenFile(kv.indexPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	for k, v := range kv.MemIndex {
-		buf := bytes.NewBuffer([]byte{})
-
-		if err = binary.Write(buf, binary.BigEndian, int64(len([]byte(k)))); err != nil {
-			return
-		}
-		if err = binary.Write(buf, binary.BigEndian, v.Offset); err != nil {
-			return
-		}
-
-		if _, err = buf.Write([]byte(k)); err != nil {
-			return
-		}
-
-		if _, err := f.Write(buf.Bytes()); err != nil {
-			log.Error(err)
-		}
-	}
-
-	kv.MemIndex = map[string]Index{}
-}
-
-func (kv *KV) loadIndexes() {
+func (kv *KV) loadIndex() {
 	f, err := os.Open(kv.indexPath)
 	if err != nil {
 		return
@@ -285,8 +255,38 @@ func (kv *KV) SyncToDisk() {
 		}
 	}
 
-	kv.saveIndexes()
+	kv.syncMemIndexToDisk()
 	kv.MemTable = map[string]string{}
+}
+
+func (kv *KV) syncMemIndexToDisk() {
+	f, err := os.OpenFile(kv.indexPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	for k, v := range kv.MemIndex {
+		buf := bytes.NewBuffer([]byte{})
+
+		if err = binary.Write(buf, binary.BigEndian, int64(len([]byte(k)))); err != nil {
+			return
+		}
+		if err = binary.Write(buf, binary.BigEndian, v.Offset); err != nil {
+			return
+		}
+
+		if _, err = buf.Write([]byte(k)); err != nil {
+			return
+		}
+
+		if _, err := f.Write(buf.Bytes()); err != nil {
+			log.Error(err)
+		}
+	}
+
+	kv.MemIndex = map[string]Index{}
 }
 
 func TimeTrack(start time.Time, name string) {
