@@ -20,7 +20,7 @@ type KV struct {
 	Index          map[string]Index
 	MemIndex       map[string]Index
 	MemTable       map[string]string
-	DbPath         string
+	dbPath         string
 	indexPath      string
 	blockSize      uint32
 	maxBlockNumber int16
@@ -29,7 +29,7 @@ type KV struct {
 
 func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV {
 	kv := new(KV)
-	kv.DbPath = dbPath
+	kv.dbPath = dbPath
 	kv.indexPath = indexPath
 	kv.blockSize = blockSize
 	kv.Index = make(map[string]Index)
@@ -37,7 +37,7 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	kv.MemTable = make(map[string]string)
 	kv.maxBlockNumber = maxBlockNumber
 
-	f, err := os.OpenFile(kv.DbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(kv.dbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -145,7 +145,7 @@ func get(kv *KV, key string) (string, bool) {
 		return val, ok
 	}
 
-	f, err := os.Open(kv.DbPath)
+	f, err := os.Open(kv.dbPath)
 	if err != nil {
 		return "", false
 	}
@@ -213,7 +213,7 @@ func (kv *KV) SyncToDisk() {
 		return
 	}
 
-	f, err := os.OpenFile(kv.DbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(kv.dbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
