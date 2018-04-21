@@ -102,14 +102,6 @@ func (kv *KV) loadIndex() {
 	}
 }
 
-func (kv *KV) Close() {
-	if log.GetLevel() == log.DebugLevel {
-		defer TimeTrack(time.Now(), "Close")
-	}
-
-	kv.SyncToDisk()
-}
-
 func (kv *KV) Set(key, value string) {
 	if log.GetLevel() == log.DebugLevel {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Set `%s` with value `%s`", key, value))
@@ -287,6 +279,14 @@ func (kv *KV) syncMemIndexToDisk() {
 	}
 
 	kv.MemIndex = map[string]Index{}
+}
+
+func (kv *KV) Close() {
+	if log.GetLevel() == log.DebugLevel {
+		defer TimeTrack(time.Now(), "Close")
+	}
+
+	kv.SyncToDisk()
 }
 
 func TimeTrack(start time.Time, name string) {
