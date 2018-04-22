@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -279,6 +280,85 @@ func (kv *KV) syncMemIndexToDisk() {
 	}
 
 	kv.MemIndex = map[string]Index{}
+}
+
+func (kv *KV) CompactData() {
+	indexFile, err := os.OpenFile(
+		fmt.Sprintf("compacted_%s", filepath.Base(kv.indexPath)), os.O_CREATE|os.O_WRONLY, 0644,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+	defer indexFile.Close()
+
+	dbFile, err := os.OpenFile(
+		fmt.Sprintf("compacted_%s", filepath.Base(kv.dbPath)), os.O_CREATE|os.O_WRONLY, 0644,
+	)
+	if err != nil {
+		panic(err)
+	}
+	defer dbFile.Close()
+
+	var index map[string]Index
+	index = make(map[string]Index)
+	var offset int64
+
+	for k := range kv.Index {
+		v, ok := kv.Get(k)
+		if ok {
+			fmt.Println(k, "=", v)
+
+			// SAVE DB
+			index[k] = Index{offset}
+			buf := bytes.NewBuffer([]byte{})
+
+			offset += 16
+			if err = binary.Write(buf, binary.BigEndian, int64(len([]byte(k)))); err != nil {
+				return
+			}
+			if err = binary.Write(buf, binary.BigEndian, int64(len([]byte(v)))); err != nil {
+				return
+			}
+
+			if _, err = buf.Write([]byte(k)); err != nil {
+				return
+			}
+			offset += int64(len(k))
+
+			if _, err = buf.Write([]byte(v)); err != nil {
+				return
+			}
+			offset += int64(len(v))
+
+			if _, err := dbFile.Write(buf.Bytes()); err != nil {
+				log.Error(err)
+			}
+
+			// SAVE INDEX
+			buf.Reset()
+
+			if err = binary.Write(buf, binary.BigEndian, int64(len([]byte(k)))); err != nil {
+				return
+			}
+			if err = binary.Write(buf, binary.BigEndian, index[k].Offset); err != nil {
+				return
+			}
+
+			if _, err = buf.Write([]byte(k)); err != nil {
+				return
+			}
+
+			if _, err := indexFile.Write(buf.Bytes()); err != nil {
+				log.Error(err)
+			}
+		}
+	}
+	os.Remove(kv.dbPath)
+	os.Remove(kv.indexPath)
+
+	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.dbPath)), kv.dbPath)
+	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.indexPath)), kv.indexPath)
 }
 
 func (kv *KV) Close() {
