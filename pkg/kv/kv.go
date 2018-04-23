@@ -131,7 +131,7 @@ func (kv *KV) Delete(key string) {
 	}
 
 	kv.lock.Lock()
-	delete(kv, key)
+	del(kv, key)
 	kv.lock.Unlock()
 }
 
@@ -197,7 +197,7 @@ func set(kv *KV, key, value string) {
 	}
 }
 
-func delete(kv *KV, key string) {
+func del(kv *KV, key string) {
 	kv.MemTable[key] = "__KVGO_TOMBSTONE__"
 
 	if uint32(len(kv.MemTable)) == kv.blockSize {
