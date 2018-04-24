@@ -359,6 +359,8 @@ func (kv *KV) CompactData() {
 
 	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.dbPath)), kv.dbPath)
 	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.indexPath)), kv.indexPath)
+
+	kv.Index = index
 }
 
 func (kv *KV) Close() {
