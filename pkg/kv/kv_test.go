@@ -141,3 +141,106 @@ func TestBasicParallel(t *testing.T) {
 		}
 	})
 }
+
+func TestCompactionBasic(t *testing.T) {
+	tmpDir, _ := ioutil.TempDir("", "testStore")
+	defer os.RemoveAll(tmpDir)
+
+	var expectedMap map[string]string
+	expectedMap = make(map[string]string)
+	var deletedKeys []string
+	deletedKeys = make([]string, 10)
+
+	dbPath := filepath.Join(".", "data.db")
+	indexPath := filepath.Join(".", "indexes.idx")
+
+	store := NewKV(dbPath, indexPath, 4, 10)
+	N := 100
+
+	for i := 0; i < N; i++ {
+		store.Set(fmt.Sprintf("key_%d", i), fmt.Sprintf("value_%d", i))
+		expectedMap[fmt.Sprintf("key_%d", i)] = fmt.Sprintf("value_%d", i)
+	}
+	store.SyncToDisk()
+
+	for i := 0; i < N; i++ {
+		if i%5 == 0 {
+			store.Set(fmt.Sprintf("key_%d", i), fmt.Sprintf("value_%d", i*5))
+			expectedMap[fmt.Sprintf("key_%d", i)] = fmt.Sprintf("value_%d", i*5)
+		}
+		if i%20 == 0 {
+			store.Set(fmt.Sprintf("key_%d", i), fmt.Sprintf("value_%d", i*20))
+			expectedMap[fmt.Sprintf("key_%d", i)] = fmt.Sprintf("value_%d", i*20)
+		}
+		if i%10 == 0 {
+			store.Delete(fmt.Sprintf("key_%d", i))
+			delete(expectedMap, fmt.Sprintf("key_%d", i))
+			deletedKeys = append(deletedKeys, fmt.Sprintf("key_%d", i))
+		}
+	}
+	store.SyncToDisk()
+
+	for k, v := range expectedMap {
+		value, ok := store.Get(k)
+
+		if ok != true {
+			t.Errorf("Expected `%v`. Got `%v`\n", true, ok)
+		}
+
+		if v != value {
+			t.Errorf("Expected `%v`. Got `%v`\n", v, value)
+		}
+	}
+	for _, k := range deletedKeys {
+		_, ok := store.Get(k)
+
+		if ok == true {
+			t.Errorf("Expected `%v`. Got `%v`\n", false, ok)
+		}
+	}
+
+	dbSizeBefore := getFileSize(dbPath)
+	indexSizeBefore := getFileSize(indexPath)
+
+	store.CompactData()
+
+	dbSizeAfter := getFileSize(dbPath)
+	indexSizeAfter := getFileSize(indexPath)
+
+	if dbSizeBefore == dbSizeAfter {
+		t.Errorf("File size after compaction should be smaller than it was before\n")
+	}
+	if indexSizeBefore == indexSizeAfter {
+		t.Errorf("File size after compaction should be smaller than it was before\n")
+	}
+
+	for k, v := range expectedMap {
+		value, ok := store.Get(k)
+
+		if ok != true {
+			t.Errorf("Expected `%v`. Got `%v`\n", true, ok)
+		}
+
+		if v != value {
+			t.Errorf("Expected `%v`. Got `%v`\n", v, value)
+		}
+	}
+	for _, k := range deletedKeys {
+		_, ok := store.Get(k)
+
+		if ok == true {
+			t.Errorf("Expected `%v`. Got `%v`\n", false, ok)
+		}
+	}
+}
+
+func getFileSize(filePath string) int64 {
+	f, err := os.OpenFile(filePath, os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	st, _ := f.Stat()
+	return st.Size()
+}
