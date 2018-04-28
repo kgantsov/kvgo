@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/go-redis/redis"
+	"github.com/kgantsov/kvgo/pkg/kv"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestBasic(t *testing.T) {
@@ -17,8 +19,11 @@ func TestBasic(t *testing.T) {
 	dbPath := filepath.Join(".", "data.db")
 	indexPath := filepath.Join(".", "indexes.idx")
 
+	log.Info("Creating storage...")
+	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
+
 	go func() {
-		ListenAndServ(port, dbPath, indexPath)
+		ListenAndServ(port, store)
 	}()
 
 	client := redis.NewClient(&redis.Options{

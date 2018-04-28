@@ -16,13 +16,11 @@ import (
 // ListenAndServ accepts incoming connections on the creating a new service goroutine for each.
 // The service goroutines read requests and then replies to them.
 // It exits program if it can not start tcp listener.
-func ListenAndServ(port, dbPath, indexPath string) {
+func ListenAndServ(port string, store *kv.KV) {
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Info("Creating storage...")
-	kv := kv.NewKV(dbPath, indexPath, 1000, 10000)
 	log.Info("Storage was succesfully created")
 
 	go func() {
@@ -31,7 +29,7 @@ func ListenAndServ(port, dbPath, indexPath string) {
 
 		log.Info("Saving data on disk...")
 
-		kv.Close()
+		store.Close()
 		os.Exit(0)
 	}()
 
@@ -48,11 +46,11 @@ func ListenAndServ(port, dbPath, indexPath string) {
 			log.Error("Fatal error: ", err.Error())
 			continue
 		}
-		go handleClient(kv, conn)
+		go handleClient(store, conn)
 	}
 }
 
-func handleClient(kv *kv.KV, conn net.Conn) {
+func handleClient(store *kv.KV, conn net.Conn) {
 	request := make([]byte, 128)
 	defer conn.Close()
 
@@ -84,7 +82,7 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				key := scanner.Text()
 
-				value, ok := kv.Get(key)
+				value, ok := store.Get(key)
 				if ok {
 					conn.Write([]byte(fmt.Sprintf("$%d\r\n", len(value))))
 					conn.Write([]byte(fmt.Sprintf("%s\r\n", value)))
@@ -100,14 +98,14 @@ func handleClient(kv *kv.KV, conn net.Conn) {
 				scanner.Scan()
 				value := scanner.Text()
 
-				kv.Set(key, value)
+				store.Set(key, value)
 				conn.Write([]byte(fmt.Sprintf("+OK\r\n")))
 			case "DEL":
 				scanner.Scan()
 				scanner.Scan()
 				key := scanner.Text()
 
-				kv.Delete(key)
+				store.Delete(key)
 				conn.Write([]byte(fmt.Sprintf(":1\r\n")))
 			default:
 				conn.Write([]byte(fmt.Sprintf("-ERR unknown command '%s'\r\n", op)))
