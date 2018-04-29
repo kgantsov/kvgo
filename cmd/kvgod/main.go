@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/kgantsov/kvgo/pkg/kv"
 	server "github.com/kgantsov/kvgo/pkg/server"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,5 +25,9 @@ func main() {
 	log.SetLevel(level)
 
 	port := ":56379"
-	server.ListenAndServ(port, dbPath, indexPath)
+
+	log.Info("Creating storage...")
+	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
+
+	server.ListenAndServ(port, store)
 }
