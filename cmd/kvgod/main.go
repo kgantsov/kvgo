@@ -5,6 +5,7 @@ import (
 
 	"github.com/kgantsov/kvgo/pkg/kv"
 	server "github.com/kgantsov/kvgo/pkg/server"
+	server_grpc "github.com/kgantsov/kvgo/pkg/server_grpc"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,4 +31,5 @@ func main() {
 	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
 
 	server.ListenAndServ(port, store)
+	server_grpc.ListenAndServGrpc(":50051", store)
 }
