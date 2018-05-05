@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/kgantsov/kvgo/pkg/kv"
 	server "github.com/kgantsov/kvgo/pkg/server"
@@ -13,6 +14,8 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
+	port := flag.String("port", "56379", "DB port")
+	rpcPort := flag.String("rpc_port", "50051", "RPC DB port")
 	logLevel := flag.String("log_level", "info", "Log level")
 	flag.Parse()
 
@@ -25,11 +28,9 @@ func main() {
 	}
 	log.SetLevel(level)
 
-	port := ":56379"
-
 	log.Info("Creating storage...")
 	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
 
-	server.ListenAndServ(port, store)
-	server_grpc.ListenAndServGrpc(":50051", store)
+	server.ListenAndServ(fmt.Sprintf(":%s", *port), store)
+	server_grpc.ListenAndServGrpc(fmt.Sprintf(":%s", *rpcPort), store)
 }
