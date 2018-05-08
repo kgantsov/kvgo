@@ -26,6 +26,7 @@ type KV struct {
 	blockSize      uint32
 	maxBlockNumber int16
 	lock           sync.RWMutex
+	isCompacting   Bool
 }
 
 func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV {
@@ -37,6 +38,9 @@ func NewKV(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *KV
 	kv.MemIndex = make(map[string]Index)
 	kv.MemTable = make(map[string]string)
 	kv.maxBlockNumber = maxBlockNumber
+	kv.isCompacting = NewBool()
+
+	kv.isCompacting.Set(false)
 
 	f, err := os.OpenFile(kv.dbPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -192,7 +196,7 @@ func get(kv *KV, key string) (string, bool) {
 func set(kv *KV, key, value string) {
 	kv.MemTable[key] = value
 
-	if uint32(len(kv.MemTable)) == kv.blockSize {
+	if !kv.isCompacting.Value() && uint32(len(kv.MemTable)) == kv.blockSize {
 		kv.SyncToDisk()
 	}
 }
@@ -200,7 +204,7 @@ func set(kv *KV, key, value string) {
 func del(kv *KV, key string) {
 	kv.MemTable[key] = "__KVGO_TOMBSTONE__"
 
-	if uint32(len(kv.MemTable)) == kv.blockSize {
+	if !kv.isCompacting.Value() && uint32(len(kv.MemTable)) == kv.blockSize {
 		kv.SyncToDisk()
 	}
 }
@@ -283,6 +287,12 @@ func (kv *KV) syncMemIndexToDisk() {
 }
 
 func (kv *KV) CompactData() {
+	if kv.isCompacting.Value() {
+		return
+	}
+
+	kv.isCompacting.Set(true)
+
 	indexFile, err := os.OpenFile(
 		fmt.Sprintf("compacted_%s", filepath.Base(kv.indexPath)), os.O_CREATE|os.O_WRONLY, 0644,
 	)
@@ -360,7 +370,11 @@ func (kv *KV) CompactData() {
 	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.dbPath)), kv.dbPath)
 	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.indexPath)), kv.indexPath)
 
+	kv.lock.Lock()
 	kv.Index = index
+	kv.lock.Unlock()
+
+	kv.isCompacting.Set(false)
 }
 
 func (kv *KV) Close() {
