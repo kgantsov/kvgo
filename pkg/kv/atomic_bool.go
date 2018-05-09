@@ -13,7 +13,7 @@ func NewBool() Bool {
 }
 
 func (b *Bool) Value() bool {
-	if b.value == 1 {
+	if atomic.LoadInt32(&b.value) == 1 {
 		return true
 	} else {
 		return false
