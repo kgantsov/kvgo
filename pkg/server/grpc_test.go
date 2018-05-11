@@ -9,13 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kgantsov/kvgo/pkg/kv"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
-func TestBasic(t *testing.T) {
-	port := ":56379"
+func TestGRPCServerBasic(t *testing.T) {
+	port := ":50051"
 	address := "localhost" + port
 
 	tmpDir, _ := ioutil.TempDir("", "kvgo_grpc_tests")
@@ -25,7 +24,7 @@ func TestBasic(t *testing.T) {
 	indexPath := filepath.Join(".", "indexes.idx")
 
 	log.Info("Creating storage...")
-	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
+	store := NewStore(dbPath, indexPath, 1000, 10000)
 
 	go func() {
 		ListenAndServGrpc(port, store)
@@ -38,10 +37,6 @@ func TestBasic(t *testing.T) {
 	}
 	defer conn.Close()
 	c := NewKVClient(conn)
-
-	if len(os.Args) < 3 {
-		fmt.Println("Wrong number of arguments")
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()

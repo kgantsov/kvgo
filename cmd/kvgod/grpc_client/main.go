@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/kgantsov/kvgo/pkg/server_grpc"
+	pb "github.com/kgantsov/kvgo/pkg/server"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )

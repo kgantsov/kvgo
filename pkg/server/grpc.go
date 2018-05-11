@@ -1,10 +1,8 @@
 package server
 
 import (
-	"fmt"
 	"net"
 
-	kv "github.com/kgantsov/kvgo/pkg/kv"
 	log "github.com/sirupsen/logrus"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -16,10 +14,10 @@ const (
 )
 
 type server struct {
-	store *kv.KV
+	store *Store
 }
 
-func ListenAndServGrpc(port string, store *kv.KV) {
+func ListenAndServGrpc(port string, store *Store) {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -47,7 +45,6 @@ func (s *server) Set(ctx context.Context, in *SetRequest) (*SetResponse, error) 
 
 func (s *server) Get(ctx context.Context, in *GetRequest) (*GetResponse, error) {
 	val, ok := s.store.Get(in.Key)
-	fmt.Println(">>>>>", val, ok)
 	return &GetResponse{Exist: ok, Value: val}, nil
 }
 

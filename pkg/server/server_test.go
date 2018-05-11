@@ -7,11 +7,10 @@ import (
 	"testing"
 
 	"github.com/go-redis/redis"
-	"github.com/kgantsov/kvgo/pkg/kv"
 	log "github.com/sirupsen/logrus"
 )
 
-func TestBasic(t *testing.T) {
+func TestServerBasic(t *testing.T) {
 	port := ":56379"
 	tmpDir, _ := ioutil.TempDir("", "kvgo_tests")
 	defer os.RemoveAll(tmpDir)
@@ -20,7 +19,7 @@ func TestBasic(t *testing.T) {
 	indexPath := filepath.Join(".", "indexes.idx")
 
 	log.Info("Creating storage...")
-	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
+	store := NewStore(dbPath, indexPath, 1000, 10000)
 
 	go func() {
 		ListenAndServ(port, store)

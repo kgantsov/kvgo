@@ -9,14 +9,13 @@ import (
 	"strings"
 	"syscall"
 
-	kv "github.com/kgantsov/kvgo/pkg/kv"
 	log "github.com/sirupsen/logrus"
 )
 
 // ListenAndServ accepts incoming connections on the creating a new service goroutine for each.
 // The service goroutines read requests and then replies to them.
 // It exits program if it can not start tcp listener.
-func ListenAndServ(port string, store *kv.KV) {
+func ListenAndServ(port string, store *Store) {
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -50,7 +49,7 @@ func ListenAndServ(port string, store *kv.KV) {
 	}
 }
 
-func handleClient(store *kv.KV, conn net.Conn) {
+func handleClient(store *Store, conn net.Conn) {
 	request := make([]byte, 128)
 	defer conn.Close()
 

@@ -3,8 +3,7 @@ package main
 import (
 	"path/filepath"
 
-	kv "github.com/kgantsov/kvgo/pkg/kv"
-	server_grps "github.com/kgantsov/kvgo/pkg/server_grpc"
+	server "github.com/kgantsov/kvgo/pkg/server"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,10 +16,10 @@ func main() {
 	dbPath := filepath.Join(".", "data.db")
 	indexPath := filepath.Join(".", "indexes.idx")
 
-	store := kv.NewKV(dbPath, indexPath, 4, 100)
+	store := server.NewStore(dbPath, indexPath, 4, 100)
 	log.Info("Storage was succesfully created")
 
-	server_grps.ListenAndServGrpc(":50051", store)
+	server.ListenAndServGrpc(":50051", store)
 
 	log.Info("Listening on port: ", port[1:])
 }

@@ -4,9 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/kgantsov/kvgo/pkg/kv"
 	server "github.com/kgantsov/kvgo/pkg/server"
-	server_grpc "github.com/kgantsov/kvgo/pkg/server_grpc"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,8 +27,8 @@ func main() {
 	log.SetLevel(level)
 
 	log.Info("Creating storage...")
-	store := kv.NewKV(dbPath, indexPath, 1000, 10000)
+	store := server.NewStore(dbPath, indexPath, 1000, 10000)
 
 	server.ListenAndServ(fmt.Sprintf(":%s", *port), store)
-	server_grpc.ListenAndServGrpc(fmt.Sprintf(":%s", *rpcPort), store)
+	server.ListenAndServGrpc(fmt.Sprintf(":%s", *rpcPort), store)
 }
