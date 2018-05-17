@@ -1,3 +1,5 @@
+![Build status](http://thekoss.ml:8000/api/badges/kgantsov/kvgo/status.svg) 
+
 # kvgo
 A simple key-value on-disk database that could be embedded in the app or run as a separate server and could be used through a redis protocol
 
