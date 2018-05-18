@@ -25,7 +25,7 @@ type KV struct {
 	indexPath      string
 	blockSize      uint32
 	maxBlockNumber int16
-	lock           sync.RWMutex
+	Lock           sync.RWMutex
 	isCompacting   Bool
 }
 
@@ -112,9 +112,9 @@ func (kv *KV) Set(key, value string) {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Set `%s` with value `%s`", key, value))
 	}
 
-	kv.lock.Lock()
+	kv.Lock.Lock()
 	set(kv, key, value)
-	kv.lock.Unlock()
+	kv.Lock.Unlock()
 }
 
 func (kv *KV) Get(key string) (string, bool) {
@@ -122,9 +122,9 @@ func (kv *KV) Get(key string) (string, bool) {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Get `%s`", key))
 	}
 
-	kv.lock.RLock()
+	kv.Lock.RLock()
 	val, ok := get(kv, key)
-	kv.lock.RUnlock()
+	kv.Lock.RUnlock()
 
 	return val, ok
 }
@@ -134,9 +134,9 @@ func (kv *KV) Delete(key string) {
 		defer TimeTrack(time.Now(), fmt.Sprintf("Delete `%s`", key))
 	}
 
-	kv.lock.Lock()
+	kv.Lock.Lock()
 	del(kv, key)
-	kv.lock.Unlock()
+	kv.Lock.Unlock()
 }
 
 func get(kv *KV, key string) (string, bool) {
@@ -370,9 +370,9 @@ func (kv *KV) CompactData() {
 	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.dbPath)), kv.dbPath)
 	os.Rename(fmt.Sprintf("compacted_%s", filepath.Base(kv.indexPath)), kv.indexPath)
 
-	kv.lock.Lock()
+	kv.Lock.Lock()
 	kv.Index = index
-	kv.lock.Unlock()
+	kv.Lock.Unlock()
 
 	kv.isCompacting.Set(false)
 }
