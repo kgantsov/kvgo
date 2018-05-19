@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -11,13 +12,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	address = "localhost:50051"
-)
-
 func main() {
-	// Set up a connection to the server.
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	rpcAddr := flag.String("rpc_addr", ":50051", "RPC bind address")
+	flag.Parse()
+
+	command := flag.Arg(0)
+	key := flag.Arg(1)
+	value := flag.Arg(2)
+
+	conn, err := grpc.Dial(*rpcAddr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -28,32 +31,27 @@ func main() {
 		fmt.Println("Wrong number of arguments")
 	}
 
-	command := os.Args[1]
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	switch command {
 	case "get":
-		fmt.Println("get")
-		r, err := c.Get(ctx, &pb.GetRequest{Key: os.Args[2]})
+		r, err := c.Get(ctx, &pb.GetRequest{Key: key})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Result: %s", r.Value)
+		fmt.Println("Result: ", r.Value)
 	case "set":
-		fmt.Println("set")
-		r, err := c.Set(ctx, &pb.SetRequest{Key: os.Args[2], Value: os.Args[3]})
+		r, err := c.Set(ctx, &pb.SetRequest{Key: key, Value: value})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Result: %s", r.Exist)
+		fmt.Println("Result: ", r.Exist)
 	case "del":
-		fmt.Println("del")
-		r, err := c.Del(ctx, &pb.DelRequest{Key: os.Args[2]})
+		r, err := c.Del(ctx, &pb.DelRequest{Key: key})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Result: %s", r.Exist)
+		fmt.Println("Result: ", r.Exist)
 	}
 }
