@@ -27,8 +27,9 @@ func main() {
 	defer conn.Close()
 	c := pb.NewKVClient(conn)
 
-	if len(os.Args) < 3 {
+	if flag.NArg() < 2 {
 		fmt.Println("Wrong number of arguments")
+		os.Exit(1)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
