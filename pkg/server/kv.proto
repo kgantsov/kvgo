@@ -28,9 +28,19 @@ message DelResponse {
   bool exist = 1;
 }
 
+message JoinRequest {
+  string addr = 1;
+  string nodeID = 2;
+}
+
+message JoinResponse {
+  bool joined = 1;
+}
+
 
 service KV {
   rpc Set (SetRequest) returns (SetResponse) {}
   rpc Get (GetRequest) returns (GetResponse) {}
   rpc Del (DelRequest) returns (DelResponse) {}
+  rpc Join (JoinRequest) returns (JoinResponse) {}
 }

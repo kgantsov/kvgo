@@ -52,3 +52,8 @@ func (s *server) Del(ctx context.Context, in *DelRequest) (*DelResponse, error) 
 	s.store.Delete(in.Key)
 	return &DelResponse{Exist: false}, nil
 }
+
+func (s *server) Join(ctx context.Context, in *JoinRequest) (*JoinResponse, error) {
+	s.store.Join(in.NodeID, in.Addr)
+	return &JoinResponse{Joined: true}, nil
+}
