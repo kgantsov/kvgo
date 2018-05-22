@@ -22,13 +22,22 @@ func TestGRPCServerBasic(t *testing.T) {
 
 	dbPath := filepath.Join(".", "data.db")
 	indexPath := filepath.Join(".", "indexes.idx")
+	raftDir := filepath.Join(".", "raft")
 
 	log.Info("Creating storage...")
 	store := NewStore(dbPath, indexPath, 1000, 10000)
+	store.RaftDir = raftDir
+	store.RaftBind = ":12000"
+
+	if err := store.Open(true, "node1"); err != nil {
+		log.Fatalf("failed to open store: %s", err.Error())
+	}
 
 	go func() {
 		ListenAndServGrpc(port, store)
 	}()
+
+	time.Sleep(3 * time.Second)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -41,7 +50,7 @@ func TestGRPCServerBasic(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 5; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		value := fmt.Sprintf("value_%d", i)
 		_, err := c.Get(ctx, &GetRequest{Key: key})
@@ -55,6 +64,8 @@ func TestGRPCServerBasic(t *testing.T) {
 		if setResp.Exist != true {
 			t.Errorf("Expected `true`. Got `%v`\n", setResp.Exist)
 		}
+
+		time.Sleep(500 * time.Millisecond)
 
 		getResp, err := c.Get(ctx, &GetRequest{Key: key})
 
