@@ -16,7 +16,7 @@ const dbPath = "./data.db"
 const indexPath = "./indexes.idx"
 
 func main() {
-	// addr := flag.String("addr", ":56379", "Redis bind address")
+	addr := flag.String("addr", ":56379", "Redis bind address")
 	rpcAddr := flag.String("rpc_addr", ":50051", "RPC bind address")
 	raftDir := flag.String("raft_dir", "", "RPC DB port")
 	raftAddr := flag.String("raft_addr", ":12000", "Raft bind address")
@@ -70,6 +70,6 @@ func main() {
 		}
 	}
 
+	go server.ListenAndServ(*addr, store)
 	server.ListenAndServGrpc(*rpcAddr, store)
-	// server.ListenAndServ(*addr, store)
 }
