@@ -71,16 +71,16 @@ func main() {
 
 #### Run the first node that will become 
 ```bash
-kvgod --rpc_addr :50051 --raft_dir raft1 --raft_addr :12000 --node_id node1
+kvgod --addr :56379 --rpc_addr :50051 --raft_dir raft1 --raft_addr :12000 --node_id node1
 
 ```
 #### Run the second node and join the first one
 ```bash
-kvgod --rpc_addr :50052 --raft_dir raft2 --raft_addr :12001 --node_id node2 --join_addr :50051
+kvgod --addr :56380 --rpc_addr :50052 --raft_dir raft2 --raft_addr :12001 --node_id node2 --join_addr :50051
 ```
 #### Run the third node and join the first one
 ```bash
-kvgod --rpc_addr :50053 --raft_dir raft3 --raft_addr :12002 --node_id node3 --join_addr :50051
+kvgod --addr :56381 --rpc_addr :50053 --raft_dir raft3 --raft_addr :12002 --node_id node3 --join_addr :50051
 ```
 
 ## Using kvgo as a library
