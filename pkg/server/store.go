@@ -91,6 +91,8 @@ func (s *Store) Open(enableSingle bool, localID string) error {
 		ra.BootstrapCluster(configuration)
 	}
 
+	go s.Compacter()
+
 	return nil
 }
 
@@ -186,6 +188,17 @@ func (s *Store) CompactData() {
 
 func (s *Store) Close() {
 	s.KV.Close()
+}
+
+func (s *Store) Compacter() {
+	tick := time.Tick(24 * time.Hour)
+	for {
+		select {
+		case <-tick:
+			s.CompactData()
+			continue
+		}
+	}
 }
 
 type FSM Store
