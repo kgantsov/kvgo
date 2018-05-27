@@ -63,7 +63,6 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		log.Info("TRYING TO CONNECT OT REMOTE NODE remote node %s at %s", *nodeID, *raftAddr)
 		_, err = c.Join(ctx, &pb.JoinRequest{Addr: *raftAddr, NodeID: *nodeID})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
