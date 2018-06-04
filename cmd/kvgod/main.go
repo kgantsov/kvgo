@@ -65,7 +65,7 @@ func main() {
 
 		_, err = c.Join(ctx, &pb.JoinRequest{Addr: *raftAddr, NodeID: *nodeID})
 		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+			log.Fatalf("could not join server: %v", err)
 		}
 	}
 

@@ -39,19 +39,19 @@ func main() {
 	case "get":
 		r, err := c.Get(ctx, &pb.GetRequest{Key: key})
 		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+			log.Fatalf("could not get key %s: %v", key, err)
 		}
 		fmt.Println("Result: ", r.Value)
 	case "set":
 		r, err := c.Set(ctx, &pb.SetRequest{Key: key, Value: value})
 		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+			log.Fatalf("could not set key %s to a value %s: %v", key, value, err)
 		}
 		fmt.Println("Result: ", r.Exist)
 	case "del":
 		r, err := c.Del(ctx, &pb.DelRequest{Key: key})
 		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+			log.Fatalf("could not delete key %s: %v", key, err)
 		}
 		fmt.Println("Result: ", r.Exist)
 	}
