@@ -35,9 +35,12 @@ type command struct {
 	Value string `json:"value,omitempty"`
 }
 
-func NewStore(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16) *Store {
+func NewStore(dbPath, indexPath string, blockSize uint32, maxBlockNumber int16, RaftDir, RaftBind string) *Store {
 	store := new(Store)
 	store.KV = kv.NewKV(dbPath, indexPath, blockSize, maxBlockNumber)
+
+	store.RaftDir = RaftDir
+	store.RaftBind = RaftBind
 
 	return store
 }

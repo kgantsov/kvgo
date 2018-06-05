@@ -43,10 +43,8 @@ func main() {
 
 	log.Info("Creating storage...")
 	store := server.NewStore(
-		filepath.Join(*raftDir, dbPath), filepath.Join(*raftDir, indexPath), 1000, 10000,
+		filepath.Join(*raftDir, dbPath), filepath.Join(*raftDir, indexPath), 1000, 10000, *raftDir, *raftAddr,
 	)
-	store.RaftDir = *raftDir
-	store.RaftBind = *raftAddr
 
 	if err := store.Open(*joinAddr == "", *nodeID); err != nil {
 		log.Fatalf("failed to open store: %s", err.Error())

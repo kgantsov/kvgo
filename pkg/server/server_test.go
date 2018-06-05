@@ -13,6 +13,7 @@ import (
 
 func TestServerBasic(t *testing.T) {
 	port := ":56379"
+	raftAddr := ":12001"
 	tmpDir, _ := ioutil.TempDir("", "kvgo_tests")
 	defer os.RemoveAll(tmpDir)
 
@@ -21,9 +22,7 @@ func TestServerBasic(t *testing.T) {
 	raftDir := filepath.Join(tmpDir, "raft")
 
 	log.Info("Creating storage...")
-	store := NewStore(dbPath, indexPath, 1000, 10000)
-	store.RaftDir = raftDir
-	store.RaftBind = ":12001"
+	store := NewStore(dbPath, indexPath, 1000, 10000, raftDir, raftAddr)
 
 	if err := store.Open(true, "node1"); err != nil {
 		log.Fatalf("failed to open store: %s", err.Error())

@@ -15,6 +15,7 @@ import (
 
 func TestGRPCServerBasic(t *testing.T) {
 	port := ":50051"
+	raftAddr := ":12000"
 	address := "localhost" + port
 
 	tmpDir, _ := ioutil.TempDir("", "kvgo_grpc_tests")
@@ -25,9 +26,7 @@ func TestGRPCServerBasic(t *testing.T) {
 	raftDir := filepath.Join(".", "raft")
 
 	log.Info("Creating storage...")
-	store := NewStore(dbPath, indexPath, 1000, 10000)
-	store.RaftDir = raftDir
-	store.RaftBind = ":12000"
+	store := NewStore(dbPath, indexPath, 1000, 10000, raftDir, raftAddr)
 
 	if err := store.Open(true, "node1"); err != nil {
 		log.Fatalf("failed to open store: %s", err.Error())
