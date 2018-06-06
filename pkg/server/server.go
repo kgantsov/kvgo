@@ -81,8 +81,9 @@ func handleClient(store *Store, conn net.Conn) {
 				scanner.Scan()
 				key := scanner.Text()
 
-				value, ok := store.Get(key)
-				if ok {
+				value, err := store.Get(key)
+
+				if err == nil {
 					conn.Write([]byte(fmt.Sprintf("$%d\r\n", len(value))))
 					conn.Write([]byte(fmt.Sprintf("%s\r\n", value)))
 				} else {
@@ -97,15 +98,25 @@ func handleClient(store *Store, conn net.Conn) {
 				scanner.Scan()
 				value := scanner.Text()
 
-				store.Set(key, value)
-				conn.Write([]byte(fmt.Sprintf("+OK\r\n")))
+				err := store.Set(key, value)
+
+				if err == nil {
+					conn.Write([]byte(fmt.Sprintf("+OK\r\n")))
+				} else {
+					conn.Write([]byte(fmt.Sprintf("$-1\r\n")))
+				}
 			case "DEL":
 				scanner.Scan()
 				scanner.Scan()
 				key := scanner.Text()
 
-				store.Delete(key)
-				conn.Write([]byte(fmt.Sprintf(":1\r\n")))
+				err := store.Delete(key)
+				if err == nil {
+					conn.Write([]byte(fmt.Sprintf(":1\r\n")))
+				} else {
+					conn.Write([]byte(fmt.Sprintf("$-1\r\n")))
+				}
+
 			default:
 				conn.Write([]byte(fmt.Sprintf("-ERR unknown command '%s'\r\n", op)))
 			}

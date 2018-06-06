@@ -99,10 +99,9 @@ func (s *Store) Open(enableSingle bool, localID string) error {
 	return nil
 }
 
-func (s *Store) Set(key, value string) {
+func (s *Store) Set(key, value string) error {
 	if s.raft.State() != raft.Leader {
-		log.Error("not leader")
-		return
+		return fmt.Errorf("not leader")
 	}
 
 	c := &command{
@@ -112,23 +111,25 @@ func (s *Store) Set(key, value string) {
 	}
 	b, err := json.Marshal(c)
 	if err != nil {
-		log.Error(err.Error())
-		return
+		return err
 	}
 
 	s.raft.Apply(b, raftTimeout)
+	return nil
 }
 
-func (s *Store) Get(key string) (string, bool) {
+func (s *Store) Get(key string) (string, error) {
 	val, ok := s.KV.Get(key)
+	if ok {
+		return val, nil
+	}
 
-	return val, ok
+	return "", fmt.Errorf("Key doesn't exist")
 }
 
-func (s *Store) Delete(key string) {
+func (s *Store) Delete(key string) error {
 	if s.raft.State() != raft.Leader {
-		log.Error("not leader")
-		return
+		return fmt.Errorf("not leader")
 	}
 
 	c := &command{
@@ -137,11 +138,12 @@ func (s *Store) Delete(key string) {
 	}
 	b, err := json.Marshal(c)
 	if err != nil {
-		log.Error(err.Error())
-		return
+		return err
 	}
 
 	s.raft.Apply(b, raftTimeout)
+
+	return nil
 }
 
 // Join joins a node, identified by nodeID and located at addr, to this store.

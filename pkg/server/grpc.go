@@ -44,13 +44,21 @@ func (s *server) Set(ctx context.Context, in *SetRequest) (*SetResponse, error) 
 }
 
 func (s *server) Get(ctx context.Context, in *GetRequest) (*GetResponse, error) {
-	val, ok := s.store.Get(in.Key)
-	return &GetResponse{Exist: ok, Value: val}, nil
+	val, err := s.store.Get(in.Key)
+	if err == nil {
+		return &GetResponse{Exist: true, Value: val}, nil
+	} else {
+		return &GetResponse{Exist: false, Value: ""}, nil
+	}
 }
 
 func (s *server) Del(ctx context.Context, in *DelRequest) (*DelResponse, error) {
-	s.store.Delete(in.Key)
-	return &DelResponse{Exist: false}, nil
+	err := s.store.Delete(in.Key)
+	if err == nil {
+		return &DelResponse{Exist: false}, nil
+	} else {
+		return &DelResponse{Exist: true}, nil
+	}
 }
 
 func (s *server) Join(ctx context.Context, in *JoinRequest) (*JoinResponse, error) {
